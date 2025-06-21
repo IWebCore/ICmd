@@ -1,0 +1,12 @@
+{
+    "name":"ICmd",
+    "version":"1.0.0",
+    "author": "yuekeyuan",
+    "summary":"cmd library",
+    "license":"AGPL-3.0-only",
+    "dependencies": {
+        "asio": "*",
+        "nlohmann.json": "*"
+    },
+    "keywords": ["ICmd", "IWebCore"]
+}
