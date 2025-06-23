@@ -1,0 +1,116 @@
+﻿#include "ICmdAction.h"
+#include "cmd/ICmdRequest.h"
+#include "cmd/ICmdException.h"
+#include "cmd/action/ICmdActionOptionValue.h"
+#include "cmd/action/ICmdActionOptionOn.h"
+#include "cmd/action/ICmdActionArgs.h"
+#include "cmd/action/ICmdActionArgx.h"
+
+$PackageWebCoreBegin
+
+ICmdAction::ICmdAction()
+{
+}
+
+bool ICmdAction::isMatch(const ICmdRequest &request)
+{
+    if(request.m_paths == m_paths){
+        return true;
+    }
+    return false;
+}
+
+void ICmdAction::execute(const ICmdRequest &request)
+{
+    executeOptions(request);
+    executeOptionOns(request);
+    executeArgs(request);
+    executeArgx(request);
+    executeMain(request);
+}
+
+void ICmdAction::executeOptions(const ICmdRequest &request)
+{
+    for(auto option : m_options){
+        try{
+            option->execute(*this, request);
+        }catch(ICmdException e){
+            QString tip = e.getCause();
+            qDebug() << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
+                     << " [Cmd Arg Type]: Option"
+                     << " [Cmd Option Name]: " << option->m_name;
+            exit(1);
+        }
+    }
+}
+
+void ICmdAction::executeOptionOns(const ICmdRequest &request)
+{
+    for(auto on : m_optionOns){
+        try{
+            on->execute(*this, request);
+        }catch(ICmdException e){
+            QString tip = e.getCause();
+            qDebug() << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
+                     << " [Cmd Arg Type]: OptionON"
+                     << " [Cmd Option ON Name]: " << on->m_name;
+            exit(1);
+        }
+    }
+}
+
+void ICmdAction::executeArgs(const ICmdRequest &request)
+{
+    if(m_args){
+        try{
+            m_args->execute(*this, request);
+        }catch(ICmdException e){
+            QString tip = e.getCause();
+            qDebug() << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
+                     << " [Cmd Arg Type]: Args"
+                     << " [Cmd Arg Values]: " << request.m_arguments.join(", ");
+            exit(1);
+        }
+    }
+}
+
+void ICmdAction::executeArgx(const ICmdRequest &request)
+{
+    for(auto argx : m_argxes){
+        try{
+           argx->execute(*this, request);
+        } catch(ICmdException e){
+            QString tip = e.getCause();
+            qDebug() << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
+                     << " [Cmd Arg Type]: ArgX" << " [ArgX Name]: " << argx->m_name
+                     << " [ArgX Index]: " << QString::number(argx->m_index);
+            exit(1);
+        }
+    }
+}
+
+void ICmdAction::executeMain(const ICmdRequest& request)
+{
+    auto params = createParams(request);
+
+    auto index = m_method.methodIndex();
+    auto obj = static_cast<QObject*>(m_ptr);
+    m_callable(obj, QMetaObject::InvokeMetaMethod, index, params.data());
+
+    destroyParams(params);
+}
+
+ICmdAction::ParamType ICmdAction::createParams(const ICmdRequest &request)
+{
+    ParamType params{0};
+    params[0] = QMetaType::create(QMetaType::Void);
+    params[1] = const_cast<ICmdRequest*>(&request);
+    return params;
+}
+
+void ICmdAction::destroyParams(const ICmdAction::ParamType &param)
+{
+    QMetaType::destroy(QMetaType::Void, param[0]);
+}
+
+$PackageWebCoreEnd

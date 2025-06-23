@@ -1,6 +1,6 @@
 ﻿#include "ICmdManage.h"
-#include "cmd/ICmdAction.h"
 #include "cmd/ICmdRequest.h"
+#include "cmd/action/ICmdAction.h"
 
 $PackageWebCoreBegin
 

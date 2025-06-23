@@ -6,10 +6,6 @@ ICmdRequest::ICmdRequest(const QStringList &cmds)
     : m_cmds(cmds)
 {
     parseCmd();
-    qDebug() << m_executable;
-    qDebug() << m_paths;
-    qDebug() << m_arguments;
-    qDebug() << m_options;
 }
 
 void ICmdRequest::parseCmd()
@@ -65,11 +61,8 @@ void ICmdRequest::parseOptions()
             }
         }
         if(cmd != "--" && cmd.startsWith("-")){
-            if(cmd.contains("--")){
-                option = cmd.mid(2);
-            }else{
-                option = cmd.mid(1);
-            }
+            option = cmd;
+            m_options[option] = QStringList{};
         }
     }
 }

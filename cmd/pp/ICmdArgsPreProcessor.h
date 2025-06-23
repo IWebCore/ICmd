@@ -3,13 +3,12 @@
 #include "core/util/IPreProcessorUtil.h"
 
 // $CmdArgs
-#define PP_CMD_ARGS_MAPPING(NAME)   \
-    PP_STRING( ICmdArgsMapping$$$ ## NAME )
-
+#define PP_CMD_ARGS_ARGUMENT(NAME)   \
+    PP_STRING( ICmdArgsArgument$$$ ## NAME )
 
 
 #define $CmdArgsDeclare(TYPE, NAME)                                     \
-    Q_CLASSINFO( PP_CMD_ARGS_MAPPING(NAME), #NAME)                      \
+    Q_CLASSINFO( PP_CMD_ARGS_ARGUMENT(NAME), #NAME)                      \
     Q_PROPERTY(TYPE NAME MEMBER NAME)                                   \
     Q_INVOKABLE void $set_value_ ## NAME(const QStringList& raws){      \
         detail::setValue< TYPE >( NAME, raws );                         \

@@ -2,18 +2,22 @@
 
 #include "core/util/IPreProcessorUtil.h"
 
-// option
-#define PP_AS_CMD_SHORT_NAME_MAPPING(NAME)    \
+#define PP_CMD_OPTION_ARGUMENT(NAME)    \
+    PP_STRING( ICmdOptionArgument$$$ ## NAME)
+
+#define PP_CMD_OPTION_SHORT_NAME_MAPPING(NAME)    \
     PP_STRING(ICmdOptionShortName$$$ ## NAME)
 
-#define $CmdOptionDeclare_2(TYPE, NAME)                                             \
-Q_INVOKABLE void $set_value_ ## NAME (const QStringList& raws)  {                   \
-    detail::setValue< TYPE >( NAME, raws);                                          \
-}                                                                                   \
-Q_PROPERTY(TYPE NAME MEMBER NAME)
+// $CmdOption
+#define $CmdOptionDeclare_2(TYPE, NAME)                                                 \
+    Q_CLASSINFO(PP_CMD_OPTION_ARGUMENT(NAME), #NAME)                                    \
+    Q_PROPERTY(TYPE NAME MEMBER NAME)                                                   \
+    Q_INVOKABLE void $set_value_ ## NAME (const QStringList& raws)  {                   \
+        detail::setValue< TYPE >( NAME, raws);                                          \
+    }
 
 #define $CmdOptionDeclare_3(TYPE, NAME, SHORT_NAME)                     \
-    Q_CLASSINFO(PP_AS_CMD_SHORT_NAME_MAPPING( NAME ), #SHORT_NAME)      \
+    Q_CLASSINFO(PP_CMD_OPTION_SHORT_NAME_MAPPING( NAME ), #SHORT_NAME)      \
     $CmdOptionDeclare_2(TYPE, NAME)
 
 #define $CmdOptionDeclare_(N) $CmdOptionDeclare_##N

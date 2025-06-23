@@ -16,7 +16,7 @@
 #define PP_CMD_ARG4_PRE_HANDLE_DEFAULT_FUNCTION(name)    \
     PP_STRING(name ## _PreHandle)
 
-#define $CmdArg4PreHandle_4(NAME)   \
+#define $CmdArg4PreHandle_1(NAME)   \
     Q_CLASSINFO(PP_CMD_ARG4_PRE_HANDLE(name), PP_CMD_ARG4_PRE_HANDLE_DEFAULT_FUNCTION( name ) )    \
     Q_INVOKABLE
 
@@ -34,7 +34,7 @@
 #define PP_CMD_ARG4_POST_HANDLE_DEFAULT_FUNCTION(name)    \
     PP_STRING(name ## _PostHandle)
 
-#define $CmdArg4PostHandle_4(NAME)   \
+#define $CmdArg4PostHandle_1(NAME)   \
     Q_CLASSINFO(PP_CMD_ARG4_POST_HANDLE(name), PP_CMD_ARG4_POST_HANDLE_DEFAULT_FUNCTION( name ) )    \
     Q_INVOKABLE
 

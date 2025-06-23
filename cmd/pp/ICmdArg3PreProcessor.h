@@ -10,14 +10,13 @@
     $CmdArg3Declare(TYPE, NAME) \
     TYPE NAME {};
 
-
 #define PP_CMD_ARG3_PRE_HANDLE(name)         \
     PP_STRING(ICmdArg3PreHandle$$$ ## name)
 
 #define PP_CMD_ARG3_PRE_HANDLE_DEFAULT_FUNCTION(name)    \
     PP_STRING(name ## _PreHandle)
 
-#define $CmdArg3PreHandle_3(NAME)   \
+#define $CmdArg3PreHandle_1(NAME)   \
     Q_CLASSINFO(PP_CMD_ARG3_PRE_HANDLE(name), PP_CMD_ARG3_PRE_HANDLE_DEFAULT_FUNCTION( name ) )    \
     Q_INVOKABLE
 
@@ -36,7 +35,7 @@
 #define PP_CMD_ARG3_POST_HANDLE_DEFAULT_FUNCTION(name)    \
     PP_STRING(name ## _PostHandle)
 
-#define $CmdArg3PostHandle_3(NAME)   \
+#define $CmdArg3PostHandle_1(NAME)   \
     Q_CLASSINFO(PP_CMD_ARG3_POST_HANDLE(name), PP_CMD_ARG3_POST_HANDLE_DEFAULT_FUNCTION( name ) )    \
     Q_INVOKABLE
 

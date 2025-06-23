@@ -2,7 +2,7 @@
 #include "core/application/IAsioApplication.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/ICmdManage.h"
-#include "cmd/ICmdAction.h"
+#include "cmd/action/ICmdAction.h"
 
 $PackageWebCoreBegin
 

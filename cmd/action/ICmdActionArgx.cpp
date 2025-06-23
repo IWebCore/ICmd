@@ -1,14 +1,18 @@
-﻿#include "ICmdActionOption.h"
-#include "cmd/ICmdAction.h"
+﻿#include "ICmdActionArgx.h"
 #include "cmd/ICmdRequest.h"
+#include "cmd/ICmdException.h"
+#include "cmd/action/ICmdAction.h"
 
 $PackageWebCoreBegin
 
-void ICmdActionOption::execute(ICmdAction &action, const ICmdRequest &request)
+ICmdActionArgx::ICmdActionArgx()
 {
-    auto values = request.m_options.value(m_name);
-    if(values.isEmpty() && m_isRequired){
-        qFatal("can not be invoked");
+}
+
+void ICmdActionArgx::execute(ICmdAction &action, const ICmdRequest &request)
+{
+    if(!validate(action, request)){
+        return;
     }
 
     if(m_preMethod.isValid()){
@@ -22,7 +26,20 @@ void ICmdActionOption::execute(ICmdAction &action, const ICmdRequest &request)
     }
 }
 
-void ICmdActionOption::invokePreMethod(ICmdAction &action, const ICmdRequest &request)
+bool ICmdActionArgx::validate(ICmdAction &action, const ICmdRequest &request)
+{
+    Q_UNUSED(action)
+    auto values = request.m_arguments;
+    if(values.length() < m_index){
+        if(!m_nullable){
+            throw ICmdException("args list too short for argx to retrive data. arg count less than " + QString::number(m_index));
+        }
+        return false;
+    }
+    return true;
+}
+
+void ICmdActionArgx::invokePreMethod(ICmdAction &action, const ICmdRequest &request)
 {
     ParamType param;
     param[0] = QMetaType::create(QMetaType::Void);
@@ -34,7 +51,7 @@ void ICmdActionOption::invokePreMethod(ICmdAction &action, const ICmdRequest &re
     QMetaType::destroy(QMetaType::Void, param[0]);
 }
 
-void ICmdActionOption::invokePostMethod(ICmdAction &action, const ICmdRequest &request)
+void ICmdActionArgx::invokePostMethod(ICmdAction &action, const ICmdRequest &request)
 {
     ParamType param;
     param[0] = QMetaType::create(QMetaType::Void);
@@ -46,9 +63,11 @@ void ICmdActionOption::invokePostMethod(ICmdAction &action, const ICmdRequest &r
     QMetaType::destroy(QMetaType::Void, param[0]);
 }
 
-void ICmdActionOption::invokeSetValueMethod(ICmdAction &action, const ICmdRequest &request)
+void ICmdActionArgx::invokeSetValueMethod(ICmdAction &action, const ICmdRequest &request)
 {
-    auto values = request.m_options[m_name];
+    auto value = request.m_arguments[m_index-1];
+    QStringList values;
+    values.append(value);
 
     ParamType param;
     param[0] = QMetaType::create(QMetaType::Void);
@@ -59,6 +78,5 @@ void ICmdActionOption::invokeSetValueMethod(ICmdAction &action, const ICmdReques
     action.m_callable(obj, QMetaObject::InvokeMetaMethod, index, param.data());
     QMetaType::destroy(QMetaType::Void, param[0]);
 }
-
 
 $PackageWebCoreEnd

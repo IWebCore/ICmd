@@ -5,8 +5,11 @@
 
 $PackageWebCoreBegin
 
-class ICmdActionOption;
 class ICmdRequest;
+class ICmdActionArgs;
+class ICmdActionArgx;
+class ICmdActionOptionValue;
+class ICmdActionOptionOn;
 class ICmdAction
 {
 private:
@@ -21,6 +24,9 @@ public:
 
 private:
     void executeOptions(const ICmdRequest& request);
+    void executeOptionOns(const ICmdRequest& request);
+    void executeArgs(const ICmdRequest& request);
+    void executeArgx(const ICmdRequest& request);
     void executeMain(const ICmdRequest& request);
 
 private:
@@ -32,7 +38,14 @@ public:
     QStringList m_paths;
     QMetaMethod m_method{};
     IGadgetUnit::StaticMetacallFunction m_callable;
-    QList<ICmdActionOption*> m_options;
+
+    ICmdActionArgs* m_args{nullptr};
+    QList<ICmdActionOptionValue*> m_options;
+    QList<ICmdActionOptionOn*> m_optionOns;
+    QList<ICmdActionArgx*> m_argxes;
+
+public:
+    QString m_memo;
 };
 
 $PackageWebCoreEnd

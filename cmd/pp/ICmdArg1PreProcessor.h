@@ -10,7 +10,6 @@
     $CmdArg1Declare(TYPE, NAME) \
     TYPE NAME {};
 
-
 #define PP_CMD_ARG1_PRE_HANDLE(name)         \
     PP_STRING(ICmdArg1PreHandle$$$ ## name)
 
