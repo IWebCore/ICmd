@@ -29,6 +29,31 @@ void ICmdAction::execute(const ICmdRequest &request)
     executeMain(request);
 }
 
+void ICmdAction::printHelp()
+{
+    qDebug().noquote() << "[PATH]: " << m_paths.join(" ");
+    if(!m_options.isEmpty()){
+        qDebug().noquote() << "Options:";
+    }
+    for(auto opt : m_options){
+        opt->printHelp();
+        for(auto optVal : m_optionValues){
+            if(optVal->m_name == opt->m_name){
+                optVal->printHelp();
+            }
+        }
+    }
+
+
+    if(m_args != nullptr){
+        qDebug().noquote() << "Args:";
+        m_args->printHelp();
+    }
+    for(auto argx : m_argxes){
+        argx->printHelp();
+    }
+}
+
 void ICmdAction::executeOptions(const ICmdRequest &request)
 {
     for(auto option : m_optionValues){

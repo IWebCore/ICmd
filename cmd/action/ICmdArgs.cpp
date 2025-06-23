@@ -26,6 +26,12 @@ void ICmdArgs::execute(ICmdAction &action, const ICmdRequest &request)
     }
 }
 
+void ICmdArgs::printHelp()
+{
+    qDebug().noquote() << "    " << "[Nullable]:" << m_nullable
+             << "[Memo]:" << m_memo;
+}
+
 bool ICmdArgs::validate(ICmdAction &action, const ICmdRequest &request)
 {
     Q_UNUSED(action)

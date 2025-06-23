@@ -48,3 +48,6 @@
 
 #define $CmdArg4Nullable(NAME)  \
     Q_CLASSINFO(PP_CMD_ARG_X_NULLABLE(NAME, 4), #NAME)
+
+#define $CmdArg4Memo(Memo)    \
+    Q_CLASSINFO(PP_STRING( ICmdArg4Memo$$$ ), Memo)

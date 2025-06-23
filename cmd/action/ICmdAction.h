@@ -22,6 +22,9 @@ public:
     bool isMatch(const ICmdRequest&);
     void execute(const ICmdRequest& request);
 
+public:
+    void printHelp();
+
 private:
     void executeOptions(const ICmdRequest& request);
     void executeOptionOns(const ICmdRequest& request);

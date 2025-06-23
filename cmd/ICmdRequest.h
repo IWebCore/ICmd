@@ -7,6 +7,7 @@ $PackageWebCoreBegin
 class ICmdRequest
 {
 public:
+    ICmdRequest() = default;
     ICmdRequest(const QStringList& cmds);
 
 private:
@@ -14,8 +15,10 @@ private:
     void parsePaths();
     void parseAguments();
     void parseOptions();
+    void parseHelp();
 
 public:
+    bool m_isHelp{false};
     QStringList m_cmds;
     QString m_executable;
     QStringList m_paths;

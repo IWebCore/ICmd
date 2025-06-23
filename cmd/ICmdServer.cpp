@@ -8,19 +8,41 @@ $PackageWebCoreBegin
 
 ICmdServer::ICmdServer()
 {
-    const auto& arguments = IApplication::instance().arguments();
-    ICmdRequest request(arguments);
+    m_request = ICmdRequest(IApplication::instance().arguments());
 
-    auto action = ICmdManage::instance().getAction(request);
-    if(!action){
-        qFatal("action not found");
-    }
-
-    action->execute(request);
 }
 
 void ICmdServer::serve()
 {
+    if(m_request.m_paths.empty()){
+        return showGlobalHelp();
+    }
+
+    if(m_request.m_isHelp){
+        return showHelp();
+    }
+
+    auto action = ICmdManage::instance().getAction(m_request);
+    if(!action){
+        return showGlobalHelp();
+    }
+
+    action->execute(m_request);
+}
+
+void ICmdServer::showGlobalHelp()
+{
+    ICmdManage::instance().printHelp();
+}
+
+void ICmdServer::showHelp()
+{
+    auto action = ICmdManage::instance().getAction(m_request);
+    if(action){
+        action->printHelp();
+    }else{
+        showGlobalHelp();
+    }
 }
 
 $PackageWebCoreEnd

@@ -185,7 +185,9 @@ void ICmdWare::findArgx()
         auto argx = new ICmdArgx;
         argx->m_index = index;
         argx->m_name = name;
+        argx->m_property = findProperty(name);
         argx->m_method = findSetValueMethod(name, "argx set_set_value method not found");
+        argx->m_memo = m_info.value("ICmdArg" + QString::number(argx->m_index) + "Memo$$$");
         argx->m_nullable = m_info.contains("ICmdArgXNullable$$$" + name + "$$$" + QString::number(argx->m_index));
         auto preHandleFun = "ICmdArg" + QString::number(argx->m_index) + "PreHandle$$$" + name;
         argx->m_preMethod = findPreHandleMethod(preHandleFun,
@@ -201,6 +203,8 @@ void ICmdWare::findArgx()
                                                 + QString(" [index]: ").append(QString::number(index))
                                                 + QString(" [PostHandle function]: ").append(postHandleFun)
                                                 + position);
+
+
 
         checkArgxMethod(argx);
         this->m_argxes.append(argx);

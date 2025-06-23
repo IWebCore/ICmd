@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "core/util/IHeaderUtil.h"
+#include "cmd/ICmdRequest.h"
 
 $PackageWebCoreBegin
 
@@ -11,6 +12,13 @@ public:
 
 public:
     void serve();
+
+private:
+    void showGlobalHelp();
+    void showHelp();
+
+private:
+    ICmdRequest m_request;
 };
 
 $PackageWebCoreEnd

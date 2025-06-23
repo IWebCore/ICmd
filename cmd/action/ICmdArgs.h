@@ -16,6 +16,7 @@ public:
 
 public:
     void execute(ICmdAction& action, const ICmdRequest& request);
+    void printHelp();
 
 private:
     bool validate(ICmdAction& action, const ICmdRequest& request);

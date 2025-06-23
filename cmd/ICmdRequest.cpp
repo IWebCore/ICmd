@@ -14,6 +14,7 @@ void ICmdRequest::parseCmd()
     parsePaths();
     parseAguments();
     parseOptions();
+    parseHelp();
 }
 
 void ICmdRequest::parsePaths()
@@ -63,6 +64,17 @@ void ICmdRequest::parseOptions()
         if(cmd != "--" && cmd.startsWith("-")){
             option = cmd;
             m_options[option] = QStringList{};
+        }
+    }
+}
+
+void ICmdRequest::parseHelp()
+{
+    for(int i=1; i<m_cmds.length(); i++){
+        const QString& cmd = m_cmds[i];
+        if(cmd == "-?"){
+            m_isHelp = true;
+            return;
         }
     }
 }

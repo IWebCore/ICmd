@@ -16,6 +16,7 @@ public:
 
 public:
     void execute(ICmdAction& action, const ICmdRequest& request);
+    void printHelp();
 
 private:
     bool validate(ICmdAction& action, const ICmdRequest& request);
@@ -27,6 +28,7 @@ public:
     int m_index{};
     bool m_nullable{false};
     QString m_name;
+    QString m_memo;
 
     QMetaProperty m_property{};
     QMetaMethod m_method{};

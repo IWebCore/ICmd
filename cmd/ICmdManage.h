@@ -14,6 +14,9 @@ public:
     ICmdManage() = default;
 
 public:
+    void printHelp();
+
+public:
     void registAction(ICmdAction*);
     ICmdAction* getAction(const ICmdRequest& request);
 

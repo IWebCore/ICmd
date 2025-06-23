@@ -22,6 +22,13 @@ void ICmdOptionValue::execute(ICmdAction &action, const ICmdRequest &request)
     }
 }
 
+void ICmdOptionValue::printHelp()
+{
+    qDebug().noquote() << "        "
+             << "[ValueType]:" << m_prop.typeName()
+             << "[Memo]:" << m_memo;
+}
+
 bool ICmdOptionValue::validate(ICmdAction &action, const ICmdRequest &request)
 {
     Q_UNUSED(action)

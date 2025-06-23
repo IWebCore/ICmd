@@ -4,6 +4,15 @@
 
 $PackageWebCoreBegin
 
+void ICmdManage::printHelp()
+{
+    qDebug().noquote() << "your input cmd do not match any action";
+    qDebug().noquote() << "[Avaliable Cmds]:";
+    for(auto act : m_actions){
+        qDebug().noquote() << act->m_paths.join(" ");
+    }
+}
+
 void ICmdManage::registAction(ICmdAction *action)
 {
     m_actions.append(action);
