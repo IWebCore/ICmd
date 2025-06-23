@@ -6,14 +6,11 @@ $PackageWebCoreBegin
 
 class ICmdAction;
 class ICmdRequest;
-// TODO: OptionON 和 Option 定义反了, 应该先有 OptionON, 再有 Option.
-class ICmdActionOptionOn
+class ICmdOption;
+class ICmdOptionValue
 {
 private:
     using ParamType = std::array<void*, 11>;
-
-public:
-    ICmdActionOptionOn();
 
 public:
     void execute(ICmdAction& action, const ICmdRequest& request);
@@ -25,17 +22,21 @@ private:
     void invokeSetValueMethod(ICmdAction& action, const ICmdRequest& request);
 
 private:
-    bool existOption(const ICmdRequest& request) const;
+    QStringList getOptionValues(const ICmdRequest& request) const;
 
 public:
+    ICmdOption* m_option{};
     QString m_name;
     QString m_shortName;
-    bool m_isRequired{false};
+    QString m_memo;
 
-    QMetaProperty m_property;
-    QMetaMethod m_method;           // 设置 method
+    QString m_valueName;
+
+    QMetaProperty m_prop;
+    QMetaMethod m_method;
     QMetaMethod m_preMethod;
     QMetaMethod m_postMethod;
 };
+
 
 $PackageWebCoreEnd

@@ -49,3 +49,7 @@
 #define $CmdMapping_(N) $CmdMapping_##N
 #define $CmdMapping_EVAL(N) $CmdMapping_(N)
 #define $CmdMapping(...) PP_EXPAND( $CmdMapping_EVAL(PP_EXPAND( PP_NARG(__VA_ARGS__) ))(__VA_ARGS__) )
+
+// memo
+#define $CmdMappingMemo(funName, Memo)   \
+    Q_CLASSINFO(PP_STRING( ICmdMappingMemo$$$ ## funName), Memo)

@@ -6,13 +6,13 @@ $PackageWebCoreBegin
 
 class ICmdAction;
 class ICmdRequest;
-class ICmdActionArgx
+class ICmdArgs
 {
 private:
     using ParamType = std::array<void*, 11>;
 
 public:
-    ICmdActionArgx();
+    ICmdArgs();
 
 public:
     void execute(ICmdAction& action, const ICmdRequest& request);
@@ -24,11 +24,11 @@ private:
     void invokeSetValueMethod(ICmdAction& action, const ICmdRequest& request);
 
 public:
-    int m_index{};
     bool m_nullable{false};
     QString m_name;
+    QString m_memo;
 
-    QMetaProperty m_property{};
+    QMetaProperty m_prop{};
     QMetaMethod m_method{};
     QMetaMethod m_preMethod{};
     QMetaMethod m_postMethod{};

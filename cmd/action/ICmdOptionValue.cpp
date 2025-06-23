@@ -1,11 +1,11 @@
-﻿#include "ICmdActionOptionValue.h"
+﻿#include "ICmdOptionValue.h"
 #include "cmd/action/ICmdAction.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/ICmdException.h"
 
 $PackageWebCoreBegin
 
-void ICmdActionOptionValue::execute(ICmdAction &action, const ICmdRequest &request)
+void ICmdOptionValue::execute(ICmdAction &action, const ICmdRequest &request)
 {
     if(!validate(action, request)){
         return;
@@ -22,22 +22,17 @@ void ICmdActionOptionValue::execute(ICmdAction &action, const ICmdRequest &reque
     }
 }
 
-bool ICmdActionOptionValue::validate(ICmdAction &action, const ICmdRequest &request)
+bool ICmdOptionValue::validate(ICmdAction &action, const ICmdRequest &request)
 {
     Q_UNUSED(action)
     auto values = getOptionValues(request);
     if(values.isEmpty()){
-        if(m_isRequired){
-            QString position = QString(" [action path]: ").append(action.m_paths.join(" "))
-                    .append(" [option name]: ").append(m_name);
-            throw ICmdException("action options is required. " + position);
-        }
         return false;
     }
     return true;
 }
 
-void ICmdActionOptionValue::invokePreMethod(ICmdAction &action, const ICmdRequest &request)
+void ICmdOptionValue::invokePreMethod(ICmdAction &action, const ICmdRequest &request)
 {
     ParamType param;
     param[0] = QMetaType::create(QMetaType::Void);
@@ -49,7 +44,7 @@ void ICmdActionOptionValue::invokePreMethod(ICmdAction &action, const ICmdReques
     QMetaType::destroy(QMetaType::Void, param[0]);
 }
 
-void ICmdActionOptionValue::invokePostMethod(ICmdAction &action, const ICmdRequest &request)
+void ICmdOptionValue::invokePostMethod(ICmdAction &action, const ICmdRequest &request)
 {
     ParamType param;
     param[0] = QMetaType::create(QMetaType::Void);
@@ -61,9 +56,9 @@ void ICmdActionOptionValue::invokePostMethod(ICmdAction &action, const ICmdReque
     QMetaType::destroy(QMetaType::Void, param[0]);
 }
 
-void ICmdActionOptionValue::invokeSetValueMethod(ICmdAction &action, const ICmdRequest &request)
+void ICmdOptionValue::invokeSetValueMethod(ICmdAction &action, const ICmdRequest &request)
 {
-    auto values = request.m_options[m_name];
+    auto values = getOptionValues(request);
 
     ParamType param;
     param[0] = QMetaType::create(QMetaType::Void);
@@ -75,7 +70,7 @@ void ICmdActionOptionValue::invokeSetValueMethod(ICmdAction &action, const ICmdR
     QMetaType::destroy(QMetaType::Void, param[0]);
 }
 
-QStringList ICmdActionOptionValue::getOptionValues(const ICmdRequest &request) const
+QStringList ICmdOptionValue::getOptionValues(const ICmdRequest &request) const
 {
     auto fullName = "--" + m_name;
     if(m_shortName.isEmpty()){

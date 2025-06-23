@@ -6,10 +6,10 @@
 $PackageWebCoreBegin
 
 class ICmdRequest;
-class ICmdActionArgs;
-class ICmdActionArgx;
-class ICmdActionOptionValue;
-class ICmdActionOptionOn;
+class ICmdArgs;
+class ICmdArgx;
+class ICmdOptionValue;
+class ICmdOption;
 class ICmdAction
 {
 private:
@@ -29,23 +29,17 @@ private:
     void executeArgx(const ICmdRequest& request);
     void executeMain(const ICmdRequest& request);
 
-private:
-    ParamType createParams(const ICmdRequest& request);
-    void destroyParams(const ParamType& param);
-
 public:
     void* m_ptr{};
+    QString m_memo;
     QStringList m_paths;
     QMetaMethod m_method{};
     IGadgetUnit::StaticMetacallFunction m_callable;
 
-    ICmdActionArgs* m_args{nullptr};
-    QList<ICmdActionOptionValue*> m_options;
-    QList<ICmdActionOptionOn*> m_optionOns;
-    QList<ICmdActionArgx*> m_argxes;
-
-public:
-    QString m_memo;
+    ICmdArgs* m_args{nullptr};
+    QList<ICmdOptionValue*> m_optionValues;
+    QList<ICmdOption*> m_options;
+    QList<ICmdArgx*> m_argxes;
 };
 
 $PackageWebCoreEnd

@@ -64,8 +64,9 @@
 #define $CmdArgsPostHandle_EVAL(N) $CmdArgsPostHandle_(N)
 #define $CmdArgsPostHandle(...) PP_EXPAND( $CmdArgsPostHandle_EVAL(PP_EXPAND( PP_NARG(__VA_ARGS__) ))(__VA_ARGS__) )
 
-
-
+// memo
+#define $CmdArgsMemo(Opt, Memo)   \
+    Q_CLASSINFO(PP_STRING( ICmdArgsMemo$$$ ## Opt), Memo)
 
 
 

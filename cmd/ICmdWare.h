@@ -6,10 +6,10 @@
 $PackageWebCoreBegin
 
 class ICmdAction;
-class ICmdActionArgs;
-class ICmdActionArgx;
-class ICmdActionOptionValue;
-class ICmdActionOptionOn;
+class ICmdArgs;
+class ICmdArgx;
+class ICmdOptionValue;
+class ICmdOption;
 class ICmdWare : public IGadgetUnit
 {
 public:
@@ -20,21 +20,28 @@ protected:
 
 private:
     void findPrePath();
-    void findOptions();
-    void findOptionOns();
+    void findOption();
+    void findOptionValues();
     void findArgs();
     void findArgx();
     void createActions();
     void createAction(const QString& key);
     QStringList getActionPaths(const QString& funName);
     QMetaMethod getActionMethod(const QString& funName);
+    QString getActionMemo(const QString& funName);
+
+private:
+    QMetaMethod findSetValueMethod(const QString& name, const QString& failReason);
+    QMetaMethod findPreHandleMethod(const QString& name, const QString& failReason);
+    QMetaMethod findPostHandleMethod(const QString& name, const QString& failReason);
+    QMetaProperty findProperty(const QString& name);
 
 private:
     void checkActionMethod(ICmdAction*);
-    void checkOptionMethod(ICmdActionOptionValue*);
-    void checkOptionOnMethod(ICmdActionOptionOn*);
+    void checkOptionValueMethod(ICmdOptionValue*);
+    void checkOptionMethod(ICmdOption*);
     void checkArgsMethod();
-    void checkArgxMethod(ICmdActionArgx* argx);
+    void checkArgxMethod(ICmdArgx* argx);
     void checkOptionShortNameComflict();
     void checkHandleMethod(const QMetaMethod& method);
 
@@ -50,10 +57,10 @@ private:
 private:
     QString m_className;
     QStringList m_prePaths;
-    ICmdActionArgs* m_args{};
-    QList<ICmdActionOptionValue*> m_options;
-    QList<ICmdActionOptionOn*> m_optionOns;
-    QList<ICmdActionArgx*> m_argxes;
+    ICmdArgs* m_args{};
+    QList<ICmdOptionValue*> m_optionValues;
+    QList<ICmdOption*> m_options;
+    QList<ICmdArgx*> m_argxes;
     QList<ICmdAction*> m_actions;
 };
 

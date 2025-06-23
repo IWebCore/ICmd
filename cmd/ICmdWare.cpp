@@ -2,10 +2,10 @@
 #include "cmd/ICmdManage.h"
 #include "cmd/ICmdException.h"
 #include "cmd/action/ICmdAction.h"
-#include "cmd/action/ICmdActionArgs.h"
-#include "cmd/action/ICmdActionArgx.h"
-#include "cmd/action/ICmdActionOptionValue.h"
-#include "cmd/action/ICmdActionOptionOn.h"
+#include "cmd/action/ICmdArgs.h"
+#include "cmd/action/ICmdArgx.h"
+#include "cmd/action/ICmdOptionValue.h"
+#include "cmd/action/ICmdOption.h"
 
 $PackageWebCoreBegin
 
@@ -19,8 +19,8 @@ void ICmdWare::parseAction(void *ptr, const QString& clsName, const QMap<QString
 
     try{
         findPrePath();
-        findOptions();
-        findOptionOns();
+        findOption();
+        findOptionValues();
         findArgs();
         findArgx();
         createActions();
@@ -50,146 +50,82 @@ void ICmdWare::findPrePath()
     }
 }
 
-void ICmdWare::findOptions()
+
+void ICmdWare::findOption()
 {
     QString position = QString(" [Class]: ").append(m_className);
 
-    QStringList optionNames;
-    for(const QString& key : m_info.keys()){
-        if(key.startsWith("ICmdOptionArgument$$$")){
-            auto name = m_info[key];
-            optionNames.append(name);
+    QStringList options;
+    for(auto key : m_info.keys()){
+        if(key.startsWith("ICmdOption$$$")){
+            options.append(m_info[key]);
         }
     }
 
-    for(auto name : optionNames){
-        // prop, name
-        auto option = new ICmdActionOptionValue;
+    for(const auto& name : options){
+        auto option = new ICmdOption();
         option->m_name = name;
+        option->m_memo = m_info.value("ICmdOptionMemo$$$" + name);
+        option->m_shortName = m_info.value("ICmdOptionShortName$$$" + name);
+        option->m_isNoValue = m_info.value("ICmdOptionNoValue$$$" + name) == "true";
+        option->m_isRequired = m_info.value("ICmdOptionRequired$$$" + name) == "true";
+        option->m_property = findProperty(name);
+        option->m_preMethod = findPreHandleMethod("ICmdOptionPreHandle$$$" + name,
+            "Option PreHandle function is defined, but function not found. "
+            + QString(" [Option Name]: ").append(option->m_name) + position);
+        option->m_postMethod = findPostHandleMethod("ICmdOptionPostHandle$$$" + name,
+            "Option PostHandle function is defined, but function not found. "
+            + QString(" [Option Name]: ").append(name).append(" [Defined Function]: ").append(name)  + position );
 
-        for(const QMetaProperty& prop : m_props){
-            if(prop.name() == name){
-                option->m_prop = prop;
-            }
-        }
-
-        //method
-        QString methodName = "$set_value_" + name;
-        for(const QMetaMethod& method : m_methods){
-            if(method.name() == methodName){
-                option->m_method = method;
-                break;
-            }
-        }
-        if(!option->m_method.isValid()){
-            throw ICmdException("Cmd Option must have its $set_value_xxx method. " + QString(" [Option Name]: ").append(name)  + position);
-        }
-
-        // required
-        QString requiredString = "ICmdOptionRequired$$$" + name;
-        option->m_isRequired = m_info.contains(requiredString);
-
-        // short name
-        QString optionShortName = "ICmdOptionShortName$$$" + name;
-        if(m_info.contains(optionShortName)){
-            option->m_shortName = m_info[optionShortName];
-        }
-
-        // pre
-        QString optionPre = "ICmdOptionPreHandle$$$" + name;
-        if(m_info.contains(optionPre)){
-            auto name = m_info[optionPre];
-            for(const QMetaMethod&method : m_methods){
-                if(method.name() == name){
-                    option->m_preMethod = method;
-                    break;
-                }
-            }
-            if(!option->m_preMethod.isValid()){
-                throw ICmdException("Option PreHandle function is defined, but function not found. "
-                                    + QString(" [Option Name]: ").append(name).append(" [Defined Function]: ").append(name)  + position);
-            }
-        }
-
-        // post
-        QString optionPost = "ICmdOptionPostHandle$$$" + name;
-        if(m_info.contains(optionPost)){
-            auto name = m_info[optionPost];
-            for(const QMetaMethod&method : m_methods){
-                if(method.name() == name){
-                    option->m_postMethod = method;
-                    break;
-                }
-            }
-            if(!option->m_postMethod.isValid()){
-                throw ICmdException("Option PostHandle function is defined, but function not found. "
-                                    + QString(" [Option Name]: ").append(name).append(" [Defined Function]: ").append(name)  + position);
-            }
-        }
         checkOptionMethod(option);
         m_options.append(option);
     }
     checkOptionShortNameComflict();
 }
 
-void ICmdWare::findOptionOns()
+void ICmdWare::findOptionValues()
 {
     QString position = QString(" [Class]: ").append(m_className);
-    QMap<QString, QString> map;
-    for(auto key : m_info.keys()){
-        if(key.startsWith("ICmdOptionOn$$$")){
-            map[key.mid(QString("ICmdOptionOn$$$").length())] = m_info[key];
+
+    QMap<ICmdOption*, QStringList> map;
+    for(auto option : m_options){
+        auto str = "ICmdOptionValue$$$" + option->m_name + "$$$";
+        for(const QString& key : m_info.keys()){
+            if(key.startsWith(str)){
+                map[option].append(m_info[key]);
+            }
         }
     }
 
-    for(auto option : map.keys()){
-        auto name = map[option];
-        auto optionOn = new ICmdActionOptionOn();
-        optionOn->m_name = option;
-
-        for(const QMetaProperty& prop : m_props){
-            if(prop.name() == name){
-                optionOn->m_property = prop;
+    for(auto opt : map.keys()){
+        for(const QString& name : map[opt]){
+            auto optionValue = new ICmdOptionValue();
+            if(opt->m_isNoValue){
+                throw ICmdException("Option is defined as no values. but OptionValue attached to this Option"
+                                    + QString(" [Option]: ").append(opt->m_name)
+                                    + QString(" [Option Name]: ").append(name) + position);
             }
+
+            optionValue->m_option = opt;
+            optionValue->m_name = opt->m_name;
+            optionValue->m_shortName = opt->m_shortName;
+            optionValue->m_valueName = name;
+            optionValue->m_memo = m_info.value("ICmdOptionValueMemo$$$" + name);
+            optionValue->m_prop = findProperty(name);
+            optionValue->m_method = findSetValueMethod(name,
+                "Cmd Option values must have its $set_value_xxx method. " + QString(" [Option Name]: ").append(name)  + position
+            );
+            optionValue->m_preMethod = findPreHandleMethod("ICmdOptionValuePreHandle$$$" + name,
+                "Option PreHandle function is defined, but function not found. "
+                + QString(" [Option Name]: ").append(name).append(" [Defined Function]: ").append(name)  + position);
+            optionValue->m_postMethod = findPostHandleMethod("ICmdOptionValuePostHandle$$$" + name,
+                 "Option PostHandle function is defined, but function not found. "
+                + QString(" [Option Name]: ").append(name).append(" [Defined Function]: ").append(name)  + position
+            );
+
+            checkOptionValueMethod(optionValue);
+            m_optionValues.append(optionValue);
         }
-
-        // required
-        QString requiredString = "ICmdOptionOnRequired$$$" + name;
-        optionOn->m_isRequired = m_info.contains(requiredString);
-
-        // pre
-        QString optionPre = "ICmdOptionOnPreHandle$$$" + name;
-        if(m_info.contains(optionPre)){
-            auto name = m_info[optionPre];
-            for(const QMetaMethod&method : m_methods){
-                if(method.name() == name){
-                    optionOn->m_preMethod = method;
-                    break;
-                }
-            }
-            if(!optionOn->m_preMethod.isValid()){
-                throw ICmdException("OptionON PreHandle function is defined, but function not found. "
-                                    + QString(" [OptionOn Name]: ").append(name).append(" [Defined Function]: ").append(name)  + position);
-            }
-        }
-
-        // post
-        QString optionPost = "ICmdOptionOnPostHandle$$$" + name;
-        if(m_info.contains(optionPost)){
-            auto name = m_info[optionPost];
-            for(const QMetaMethod&method : m_methods){
-                if(method.name() == name){
-                    optionOn->m_postMethod = method;
-                    break;
-                }
-            }
-            if(!optionOn->m_postMethod.isValid()){
-                throw ICmdException("OptionON PostHandle function is defined, but function not found. "
-                                    + QString(" [Option Name]: ").append(name).append(" [Defined Function]: ").append(name)  + position);
-            }
-        }
-        checkOptionOnMethod(optionOn);
-        m_optionOns.append(optionOn);
     }
 }
 
@@ -212,56 +148,17 @@ void ICmdWare::findArgs()
     QString position = QString(" [Class]: ").append(m_className).append(" [Args Name]: ").append(name);
 
     // prop, name
-    m_args = new ICmdActionArgs;
+    m_args = new ICmdArgs;
     m_args->m_name = name;
-    for(const QMetaProperty& prop : m_props){
-        if(prop.name() == name){
-            m_args->m_prop = prop;
-        }
-    }
+    m_args->m_memo = m_info.value("ICmdArgsMemo$$$" + name);
+    m_args->m_nullable = m_info.contains("ICmdArgsNullable$$$" + name);
+    m_args->m_method = findSetValueMethod(name, "Action Args property is not exist. " + position);
+    m_args->m_prop = findProperty(name);
+    m_args->m_preMethod = findPreHandleMethod("ICmdArgsPreHandle$$$" + name,
+        "option prehandle is define, but function not valid. " + position);
+    m_args->m_postMethod = findPostHandleMethod("ICmdArgsPostHandle$$$" + name,
+        "option posthandle is define, but function not valid. " + position);
 
-    //method
-    QString methodName = "$set_value_" + name;
-    for(const QMetaMethod& method : m_methods){
-        if(method.name() == methodName){
-            m_args->m_method = method;
-            break;
-        }
-    }
-
-    // required
-    QString nullableString = "ICmdArgsNullable$$$" + name;
-    m_args->m_nullable = m_info.contains(nullableString);
-
-    // pre
-    QString optionPre = "ICmdArgsPreHandle$$$" + name;
-    if(m_info.contains(optionPre)){
-        auto name = m_info[optionPre];
-        for(const QMetaMethod&method : m_methods){
-            if(method.name() == name){
-                m_args->m_preMethod = method;
-                break;
-            }
-        }
-        if(!m_args->m_preMethod.isValid()){
-            throw ICmdException("option prehandle is define, but function not valid. " + position);
-        }
-    }
-
-    // post
-    QString optionPost = "ICmdArgsPostHandle$$$" + name;
-    if(m_info.contains(optionPost)){
-        auto name = m_info[optionPost];
-        for(const QMetaMethod&method : m_methods){
-            if(method.name() == name){
-                m_args->m_postMethod = method;
-                break;
-            }
-        }
-        if(!m_args->m_postMethod.isValid()){
-            throw ICmdException("option posthandle is define, but function not valid. " + position);
-        }
-    }
     checkArgsMethod();
 }
 
@@ -285,58 +182,25 @@ void ICmdWare::findArgx()
 
     for(auto index: map.keys()){
         auto name = map[index];
-
-        auto argx = new ICmdActionArgx;
+        auto argx = new ICmdArgx;
         argx->m_index = index;
         argx->m_name = name;
-
-        auto methodName = "$set_value_" + name;
-        for(const QMetaMethod& method : m_methods){
-            if(method.name() == methodName){
-                argx->m_method = method;
-            }
-        }
-
-        // pre
-        QString optionPre = "ICmdArg" + QString::number(argx->m_index) + "PreHandle$$$" + name;
-        if(m_info.contains(optionPre)){
-            auto funNamename = m_info[optionPre];
-            for(const QMetaMethod&method : m_methods){
-                if(method.name() == funNamename){
-                    argx->m_preMethod = method;
-                    break;
-                }
-            }
-            if(!argx->m_preMethod.isValid()){
-                throw ICmdException("argx PreHandle function is define, but function not valid"
-                                    + QString(" [name]: ").append(name)
-                                    + QString(" [index]: ").append(QString::number(index))
-                                    + QString(" [PreHandle function]: ").append(funNamename)
-                                    + position);
-            }
-        }
-
-        // post
-        QString optionPost = "ICmdArg" + QString::number(argx->m_index) + "PostHandle$$$" + name;
-        if(m_info.contains(optionPost)){
-            auto funName = m_info[optionPost];
-            for(const QMetaMethod&method : m_methods){
-                if(method.name() == funName){
-                    argx->m_postMethod = method;
-                    break;
-                }
-            }
-            if(!argx->m_postMethod.isValid()){
-                throw ICmdException("argx PostHandle function is define, but function not valid"
-                                    + QString(" [name]: ").append(name)
-                                    + QString(" [index]: ").append(QString::number(index))
-                                    + QString(" [PostHandle function]: ").append(funName)
-                                    + position);
-            }
-        }
-
-        QString nullableStr = "ICmdArgXNullable$$$" + name + "$$$" + QString::number(argx->m_index);
-        argx->m_nullable = m_info.contains(nullableStr);
+        argx->m_method = findSetValueMethod(name, "argx set_set_value method not found");
+        argx->m_nullable = m_info.contains("ICmdArgXNullable$$$" + name + "$$$" + QString::number(argx->m_index));
+        auto preHandleFun = "ICmdArg" + QString::number(argx->m_index) + "PreHandle$$$" + name;
+        argx->m_preMethod = findPreHandleMethod(preHandleFun,
+            "argx PreHandle function is define, but function not valid"
+                                                + QString(" [name]: ").append(name)
+                                                + QString(" [index]: ").append(QString::number(index))
+                                                + QString(" [PreHandle function]: ").append(preHandleFun)
+                                                + position);
+        auto postHandleFun = "ICmdArg" + QString::number(argx->m_index) + "PostHandle$$$" + name;
+        argx->m_postMethod = findPostHandleMethod( postHandleFun,
+            "argx PostHandle function is define, but function not valid"
+                                                + QString(" [name]: ").append(name)
+                                                + QString(" [index]: ").append(QString::number(index))
+                                                + QString(" [PostHandle function]: ").append(postHandleFun)
+                                                + position);
 
         checkArgxMethod(argx);
         this->m_argxes.append(argx);
@@ -358,9 +222,11 @@ void ICmdWare::createAction(const QString &key)
     auto funName = m_info[key];
     auto action = new ICmdAction;
     action->m_ptr = m_ptr;
+    action->m_memo = getActionMemo(funName);
     action->m_paths = getActionPaths(funName);
     action->m_method = getActionMethod(funName);
     action->m_callable = (static_cast<IGadgetUnit*>(m_ptr))->staticMetaCallFunction();
+    action->m_optionValues = m_optionValues;
     action->m_options = m_options;
     action->m_args = m_args;
     action->m_argxes = m_argxes;
@@ -391,6 +257,62 @@ QMetaMethod ICmdWare::getActionMethod(const QString &funName)
     for(const QMetaMethod& method : m_methods){
         if(method.name() == funName){
             return method;
+        }
+    }
+    return {};
+}
+
+QString ICmdWare::getActionMemo(const QString &funName)
+{
+    auto memoString = "ICmdMappingMemo$$$" + funName;
+    return m_info.value(memoString);
+}
+
+QMetaMethod ICmdWare::findSetValueMethod(const QString &name, const QString &failReason)
+{
+    QString setName = "$set_value_" +  name;
+    for(const QMetaMethod& method : m_methods){
+        if(method.name() == setName){
+            return method;
+        }
+    }
+    throw ICmdException(failReason);
+    return {};
+}
+
+QMetaMethod ICmdWare::findPreHandleMethod(const QString &optionPre, const QString &failReason)
+{
+    if(m_info.contains(optionPre)){
+        auto name = m_info[optionPre];
+        for(const QMetaMethod&method : m_methods){
+            if(method.name() == name){
+                return method;
+            }
+        }
+        throw ICmdException(failReason);
+    }
+    return {};
+}
+
+QMetaMethod ICmdWare::findPostHandleMethod(const QString &optionPost, const QString &failReason)
+{
+    if(m_info.contains(optionPost)){
+        auto name = m_info[optionPost];
+        for(const QMetaMethod&method : m_methods){
+            if(method.name() == name){
+                return method;
+            }
+        }
+        throw ICmdException(failReason);
+    }
+    return {};
+}
+
+QMetaProperty ICmdWare::findProperty(const QString &name)
+{
+    for(const QMetaProperty& prop : m_props){
+        if(prop.name() == name){
+            return prop;
         }
     }
     return {};
@@ -431,40 +353,34 @@ void ICmdWare::checkActionMethod(ICmdAction *action)
     }
 }
 
-void ICmdWare::checkOptionMethod(ICmdActionOptionValue *option)
+void ICmdWare::checkOptionMethod(ICmdOption *option)
 {
     QString position = QString(" [Class]: ").append(m_className).append(" [Option Name]: ").append(option->m_name);
-    if(!option->m_method.isValid()){
-        throw ICmdException("Option $set_value_xxx method is not valid. " + position);
+
+    if(!option->m_property.isValid()){
+        throw ICmdException("Option property is not valid. "
+                            + position);
+    }
+    if(option->m_postMethod.isValid()){
+        checkHandleMethod(option->m_postMethod);
+    }
+    if(option->m_preMethod.isValid()){
+        checkHandleMethod(option->m_preMethod);
     }
 }
 
-void ICmdWare::checkOptionOnMethod(ICmdActionOptionOn *optionOn)
+void ICmdWare::checkOptionValueMethod(ICmdOptionValue *option)
 {
-    QString position = QString(" [Class]: ").append(m_className).append(" [OptionOn Name]: ").append(optionOn->m_name);
-    if(!optionOn->m_property.isValid()){
-        throw ICmdException("OptionOn property is not valid. "
-                            + position);
-    }
+    QString position = QString(" [Class]: ").append(m_className).append(" [Option Name]: ").append(option->m_name);
 
-    bool existOption{false};
-    QString name = optionOn->m_name;
-    for(auto option : m_options){
-        if(option->m_name == name){
-            existOption = true;
-            optionOn->m_shortName = option->m_shortName;
-            break;
-        }
+    if(!option->m_method.isValid()){
+        throw ICmdException("Option $set_value_xxx method is not valid. " + position);
     }
-    if(!existOption){
-        throw ICmdException("OptionOn value do not rely on any Option, the Option do not exist. "
-                            + position);
+    if(option->m_preMethod.isValid()){
+        checkHandleMethod(option->m_preMethod);
     }
-    if(optionOn->m_postMethod.isValid()){
-        checkHandleMethod(optionOn->m_postMethod);
-    }
-    if(optionOn->m_preMethod.isValid()){
-        checkHandleMethod(optionOn->m_preMethod);
+    if(option->m_postMethod.isValid()){
+        checkHandleMethod(option->m_postMethod);
     }
 }
 
@@ -491,7 +407,7 @@ void ICmdWare::checkArgsMethod()
     }
 }
 
-void ICmdWare::checkArgxMethod(ICmdActionArgx *argx)
+void ICmdWare::checkArgxMethod(ICmdArgx *argx)
 {
     QString position = QString(" [Class]: ").append(m_className)
             .append(" [argx name]: ").append(argx->m_name)
@@ -512,7 +428,7 @@ void ICmdWare::checkOptionShortNameComflict()
 {
     QString position = QString(" [Class]: ").append(m_className);
     QStringList names;
-    for(auto option : m_options){
+    for(auto option : m_optionValues){
         if(!option->m_shortName.isEmpty()){
             if(names.contains(option->m_shortName)){
                 throw ICmdException("Options shortname conflicted. " + QString(" [short name]: ").append(option->m_shortName) + position);

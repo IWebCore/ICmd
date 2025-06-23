@@ -13,7 +13,7 @@ public:
     ICmdActionMemo(const ICmdAction*);
 
 private:
-    ICmdActionOptionMemo createOptionMemo(const ICmdActionOptionValue* opt, const ICmdAction* act);
+    ICmdActionOptionMemo createOptionMemo(const ICmdOptionValue* opt, const ICmdAction* act);
 
 public:
     QString m_memo;

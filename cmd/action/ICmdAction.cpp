@@ -1,10 +1,10 @@
 ﻿#include "ICmdAction.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/ICmdException.h"
-#include "cmd/action/ICmdActionOptionValue.h"
-#include "cmd/action/ICmdActionOptionOn.h"
-#include "cmd/action/ICmdActionArgs.h"
-#include "cmd/action/ICmdActionArgx.h"
+#include "cmd/action/ICmdOptionValue.h"
+#include "cmd/action/ICmdOption.h"
+#include "cmd/action/ICmdArgs.h"
+#include "cmd/action/ICmdArgx.h"
 
 $PackageWebCoreBegin
 
@@ -31,7 +31,7 @@ void ICmdAction::execute(const ICmdRequest &request)
 
 void ICmdAction::executeOptions(const ICmdRequest &request)
 {
-    for(auto option : m_options){
+    for(auto option : m_optionValues){
         try{
             option->execute(*this, request);
         }catch(ICmdException e){
@@ -46,7 +46,7 @@ void ICmdAction::executeOptions(const ICmdRequest &request)
 
 void ICmdAction::executeOptionOns(const ICmdRequest &request)
 {
-    for(auto on : m_optionOns){
+    for(auto on : m_options){
         try{
             on->execute(*this, request);
         }catch(ICmdException e){
@@ -91,26 +91,15 @@ void ICmdAction::executeArgx(const ICmdRequest &request)
 
 void ICmdAction::executeMain(const ICmdRequest& request)
 {
-    auto params = createParams(request);
+    ParamType params{0};
+    params[0] = QMetaType::create(QMetaType::Void);
+    params[1] = const_cast<ICmdRequest*>(&request);
 
     auto index = m_method.methodIndex();
     auto obj = static_cast<QObject*>(m_ptr);
     m_callable(obj, QMetaObject::InvokeMetaMethod, index, params.data());
 
-    destroyParams(params);
-}
-
-ICmdAction::ParamType ICmdAction::createParams(const ICmdRequest &request)
-{
-    ParamType params{0};
-    params[0] = QMetaType::create(QMetaType::Void);
-    params[1] = const_cast<ICmdRequest*>(&request);
-    return params;
-}
-
-void ICmdAction::destroyParams(const ICmdAction::ParamType &param)
-{
-    QMetaType::destroy(QMetaType::Void, param[0]);
+    QMetaType::destroy(QMetaType::Void, params[0]);
 }
 
 $PackageWebCoreEnd

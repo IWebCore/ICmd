@@ -1,15 +1,15 @@
-﻿#include "ICmdActionArgx.h"
+﻿#include "ICmdArgx.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/ICmdException.h"
 #include "cmd/action/ICmdAction.h"
 
 $PackageWebCoreBegin
 
-ICmdActionArgx::ICmdActionArgx()
+ICmdArgx::ICmdArgx()
 {
 }
 
-void ICmdActionArgx::execute(ICmdAction &action, const ICmdRequest &request)
+void ICmdArgx::execute(ICmdAction &action, const ICmdRequest &request)
 {
     if(!validate(action, request)){
         return;
@@ -26,7 +26,7 @@ void ICmdActionArgx::execute(ICmdAction &action, const ICmdRequest &request)
     }
 }
 
-bool ICmdActionArgx::validate(ICmdAction &action, const ICmdRequest &request)
+bool ICmdArgx::validate(ICmdAction &action, const ICmdRequest &request)
 {
     Q_UNUSED(action)
     auto values = request.m_arguments;
@@ -39,7 +39,7 @@ bool ICmdActionArgx::validate(ICmdAction &action, const ICmdRequest &request)
     return true;
 }
 
-void ICmdActionArgx::invokePreMethod(ICmdAction &action, const ICmdRequest &request)
+void ICmdArgx::invokePreMethod(ICmdAction &action, const ICmdRequest &request)
 {
     ParamType param;
     param[0] = QMetaType::create(QMetaType::Void);
@@ -51,7 +51,7 @@ void ICmdActionArgx::invokePreMethod(ICmdAction &action, const ICmdRequest &requ
     QMetaType::destroy(QMetaType::Void, param[0]);
 }
 
-void ICmdActionArgx::invokePostMethod(ICmdAction &action, const ICmdRequest &request)
+void ICmdArgx::invokePostMethod(ICmdAction &action, const ICmdRequest &request)
 {
     ParamType param;
     param[0] = QMetaType::create(QMetaType::Void);
@@ -63,7 +63,7 @@ void ICmdActionArgx::invokePostMethod(ICmdAction &action, const ICmdRequest &req
     QMetaType::destroy(QMetaType::Void, param[0]);
 }
 
-void ICmdActionArgx::invokeSetValueMethod(ICmdAction &action, const ICmdRequest &request)
+void ICmdArgx::invokeSetValueMethod(ICmdAction &action, const ICmdRequest &request)
 {
     auto value = request.m_arguments[m_index-1];
     QStringList values;
