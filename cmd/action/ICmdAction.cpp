@@ -1,4 +1,5 @@
 ﻿#include "ICmdAction.h"
+#include "core/application/IApplication.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/ICmdException.h"
 #include "cmd/action/ICmdOptionValue.h"
@@ -31,7 +32,8 @@ void ICmdAction::execute(const ICmdRequest &request)
 
 void ICmdAction::printHelp()
 {
-    qDebug().noquote() << "[PATH]: " << m_paths.join(" ");
+    qDebug().noquote() << "[Memo]: " << m_memo;
+    qDebug().noquote() << IApplication::instance().appName() << m_paths.join(" ");
     if(!m_options.isEmpty()){
         qDebug().noquote() << "Options:";
     }
@@ -43,7 +45,6 @@ void ICmdAction::printHelp()
             }
         }
     }
-
 
     if(m_args != nullptr){
         qDebug().noquote() << "Args:";
