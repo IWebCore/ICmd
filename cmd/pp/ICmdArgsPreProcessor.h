@@ -37,7 +37,7 @@
     Q_INVOKABLE
 
 #define $CmdArgsPreHandle_2(name, func) \
-    Q_CLASSINFO(PP_CMD_ARGS_PRE_HANDLE(name), func )    \
+    Q_CLASSINFO(PP_CMD_ARGS_PRE_HANDLE(name), #func )    \
     Q_INVOKABLE
 
 #define $CmdArgsPreHandle_(N) $CmdArgsPreHandle_##N
@@ -57,7 +57,7 @@
     Q_INVOKABLE
 
 #define $CmdArgsPostHandle_2(name, func) \
-    Q_CLASSINFO(PP_CMD_ARGS_POSGT_HANDLE(name), func )    \
+    Q_CLASSINFO(PP_CMD_ARGS_POSGT_HANDLE(name), #func )    \
     Q_INVOKABLE
 
 #define $CmdArgsPostHandle_(N) $CmdArgsPostHandle_##N

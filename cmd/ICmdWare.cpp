@@ -188,15 +188,16 @@ void ICmdWare::findArgx()
         argx->m_property = findProperty(name);
         argx->m_method = findSetValueMethod(name, "argx set_set_value method not found");
         argx->m_memo = m_info.value("ICmdArg" + QString::number(argx->m_index) + "Memo$$$");
-        argx->m_nullable = m_info.contains("ICmdArgXNullable$$$" + name + "$$$" + QString::number(argx->m_index));
-        auto preHandleFun = "ICmdArg" + QString::number(argx->m_index) + "PreHandle$$$" + name;
+        QString nullableFlag = "ICmdArgXNullable$$$" + QString::number(argx->m_index);
+        argx->m_nullable = m_info.contains(nullableFlag) && m_info[nullableFlag] == "true";
+        auto preHandleFun = "ICmdArgXPreHandle$$$" + QString::number(argx->m_index);
         argx->m_preMethod = findPreHandleMethod(preHandleFun,
             "argx PreHandle function is define, but function not valid"
                                                 + QString(" [name]: ").append(name)
                                                 + QString(" [index]: ").append(QString::number(index))
                                                 + QString(" [PreHandle function]: ").append(preHandleFun)
                                                 + position);
-        auto postHandleFun = "ICmdArg" + QString::number(argx->m_index) + "PostHandle$$$" + name;
+        auto postHandleFun = "ICmdArgXPostHandle$$$" + QString::number(argx->m_index);
         argx->m_postMethod = findPostHandleMethod( postHandleFun,
             "argx PostHandle function is define, but function not valid"
                                                 + QString(" [name]: ").append(name)
@@ -250,7 +251,9 @@ QStringList ICmdWare::getActionPaths(const QString &funName)
     }
     QStringList ret = m_prePaths;
     for(int i=1; i<=paths.size(); i++){
-        ret.append(paths[i]);
+        if(paths[i] != "/"){
+            ret.append(paths[i]);
+        }
     }
 
     return ret;
@@ -324,7 +327,7 @@ QMetaProperty ICmdWare::findProperty(const QString &name)
 
 void ICmdWare::checkActionMethod(ICmdAction *action)
 {
-    QString position = QString(" [Mapping Path]: ").append(action->m_paths.join("/"))
+    QString position = QString(" [Mapping Path]: ").append(action->m_paths.join(" "))
             .append(" [FunctionName]: ").append(action->m_method.name())
             .append(" [Class]: ").append(m_className);
 

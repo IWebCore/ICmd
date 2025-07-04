@@ -8,7 +8,7 @@
 #define $CmdOption(Opt) \
     Q_CLASSINFO( PP_CMD_OPTION(Opt), #Opt)    \
     Q_PROPERTY(bool Opt MEMBER Opt )   \
-    bool  Opt {false};
+    bool Opt {false};
 
 // option pre handle
 #define PP_CMD_PRE_OPTION(name)         \
@@ -22,7 +22,7 @@
     Q_INVOKABLE
 
 #define $CmdOptionPreHandle_2(name, func)  \
-    Q_CLASSINFO(PP_CMD_PRE_OPTION(name), func )    \
+    Q_CLASSINFO(PP_CMD_PRE_OPTION(name), #func )    \
     Q_INVOKABLE
 
 #define $CmdOptionPreHandle_(N) $CmdOptionPreHandle_##N
@@ -41,7 +41,7 @@
     Q_INVOKABLE
 
 #define $CmdOptionPostHandle_2(name, func) \
-    Q_CLASSINFO(PP_CMD_POST_OPTION(name), func)    \
+    Q_CLASSINFO(PP_CMD_POST_OPTION(name), #func)    \
     Q_INVOKABLE
 
 #define $CmdOptionPostHandle_(N) $CmdOptionPostHandle_##N

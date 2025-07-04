@@ -23,6 +23,9 @@ bool ICmdAction::isMatch(const ICmdRequest &request)
 
 void ICmdAction::execute(const ICmdRequest &request)
 {
+    checkOptions(request);
+    checkOptionOns(request);
+
     executeOptions(request);
     executeOptionOns(request);
     executeArgs(request);
@@ -32,27 +35,11 @@ void ICmdAction::execute(const ICmdRequest &request)
 
 void ICmdAction::printHelp()
 {
-    qDebug().noquote() << "[Memo]: " << m_memo;
-    qDebug().noquote() << IApplication::instance().appName() << m_paths.join(" ");
-    if(!m_options.isEmpty()){
-        qDebug().noquote() << "Options:";
-    }
-    for(auto opt : m_options){
-        opt->printHelp();
-        for(auto optVal : m_optionValues){
-            if(optVal->m_name == opt->m_name){
-                optVal->printHelp();
-            }
-        }
-    }
-
-    if(m_args != nullptr){
-        qDebug().noquote() << "Args:";
-        m_args->printHelp();
-    }
-    for(auto argx : m_argxes){
-        argx->printHelp();
-    }
+    printBasic();
+    printOptions();
+    printOptionValues();
+    printArgs();
+    printArgx();
 }
 
 void ICmdAction::executeOptions(const ICmdRequest &request)
@@ -62,10 +49,44 @@ void ICmdAction::executeOptions(const ICmdRequest &request)
             option->execute(*this, request);
         }catch(ICmdException e){
             QString tip = e.getCause();
-            qDebug() << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
+            qDebug().noquote().nospace()
+                    << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
                      << " [Cmd Arg Type]: Option"
-                     << " [Cmd Option Name]: " << option->m_name;
+                     << " [Cmd Option Name]: " << option->m_name << endl;
+            printHelp();
             exit(1);
+        }
+    }
+}
+
+void ICmdAction::checkOptions(const ICmdRequest &request)
+{
+    for(const QString& key : request.m_options.keys()){
+        bool matched = false;
+        if(key.startsWith("--")){
+            QString newKey = key.left(2);
+            for(auto val : m_optionValues){
+                if(val->m_name == newKey){
+                    matched = true;
+                    break;
+                }
+            }
+        }else{
+            QString newKey = key.left(1);
+            for(auto val : m_optionValues){
+                if(val->m_shortName == newKey){
+                    matched = true;
+                    break;
+                }
+            }
+        }
+
+        if(!matched){
+            QString tip = "your input options are not defined in this cmd. [Option]: " + key;
+            qDebug().noquote().nospace()
+                    << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ");
+            printHelp();
+            quick_exit(1);
         }
     }
 }
@@ -77,10 +98,45 @@ void ICmdAction::executeOptionOns(const ICmdRequest &request)
             on->execute(*this, request);
         }catch(ICmdException e){
             QString tip = e.getCause();
-            qDebug() << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
+            qDebug().noquote().nospace()
+                    << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
                      << " [Cmd Arg Type]: OptionON"
-                     << " [Cmd Option ON Name]: " << on->m_name;
+                     << " [Cmd Option ON Name]: " << on->m_name << endl;
+
+            printHelp();
             exit(1);
+        }
+    }
+}
+
+void ICmdAction::checkOptionOns(const ICmdRequest &request)
+{
+    for(const QString& key : request.m_options.keys()){
+        bool matched = false;
+        if(key.startsWith("--")){
+            QString newKey = key.left(2);
+            for(auto val : m_options){
+                if(val->m_name == newKey){
+                    matched = true;
+                    break;
+                }
+            }
+        }else{
+            QString newKey = key.left(1);
+            for(auto val : m_options){
+                if(val->m_shortName == newKey){
+                    matched = true;
+                    break;
+                }
+            }
+        }
+
+        if(!matched){
+            QString tip = "your input options are not defined in this cmd. [Option]: " + key;
+            qDebug().noquote().nospace()
+                    << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ");
+            printHelp();
+            quick_exit(1);
         }
     }
 }
@@ -92,9 +148,12 @@ void ICmdAction::executeArgs(const ICmdRequest &request)
             m_args->execute(*this, request);
         }catch(ICmdException e){
             QString tip = e.getCause();
-            qDebug() << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
+            qDebug().noquote().nospace()
+                    << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
                      << " [Cmd Arg Type]: Args"
-                     << " [Cmd Arg Values]: " << request.m_arguments.join(", ");
+                     << " [Cmd Arg Values]: " << request.m_arguments.join(", ") << endl;
+
+            printHelp();
             exit(1);
         }
     }
@@ -107,9 +166,12 @@ void ICmdAction::executeArgx(const ICmdRequest &request)
            argx->execute(*this, request);
         } catch(ICmdException e){
             QString tip = e.getCause();
-            qDebug() << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
+            qDebug().noquote().nospace()
+                    << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
                      << " [Cmd Arg Type]: ArgX" << " [ArgX Name]: " << argx->m_name
-                     << " [ArgX Index]: " << QString::number(argx->m_index);
+                     << " [ArgX Index]: " << QString::number(argx->m_index) << endl;
+
+            printHelp();
             exit(1);
         }
     }
@@ -126,6 +188,144 @@ void ICmdAction::executeMain(const ICmdRequest& request)
     m_callable(obj, QMetaObject::InvokeMetaMethod, index, params.data());
 
     QMetaType::destroy(QMetaType::Void, params[0]);
+}
+
+void ICmdAction::printBasic()
+{
+    qDebug().noquote().nospace() << "[CMD]:";
+    qDebug().noquote().nospace() << "    " << IApplication::instance().appName() << " " << m_paths.join(" ");
+    if(!m_memo.isEmpty()){
+        qDebug().noquote().nospace() << "[Memo]:";
+        qDebug().noquote().nospace() << "    " << m_memo;
+    }
+}
+
+void ICmdAction::printOptions()
+{
+    if(m_options.isEmpty()){
+        return;
+    }
+
+    qDebug().noquote().nospace() << "[Options]:";
+
+    int fullLength{6}, shortLength{9}, requriedLength{10}, noValueLength{9};
+    for(auto opt : m_options){
+        fullLength = std::max({opt->m_name.length() + 2, fullLength});
+        shortLength = std::max({opt->m_shortName.length() + 1, shortLength});
+    }
+    qDebug().noquote().nospace()
+            << "    "
+            << qSetFieldWidth(fullLength + 2) << left << "Option"
+            << qSetFieldWidth(shortLength + 2) << left << "ShortName"
+            << qSetFieldWidth(requriedLength +2) << left << "Required"
+            << qSetFieldWidth(noValueLength + 2) << left << "NoValue"
+            << "Memo";
+
+
+    for(auto opt : m_options){
+        qDebug().noquote().nospace()
+                << "    "
+                << qSetFieldWidth(fullLength + 2) << left << "--" + opt->m_name
+                << qSetFieldWidth(shortLength + 2) << left << "-" + opt->m_shortName
+                << qSetFieldWidth(requriedLength +2) << left << opt->m_isRequired
+                << qSetFieldWidth(noValueLength + 2) << left << opt->m_isNoValue
+                << opt->m_memo;
+    }
+
+}
+
+void ICmdAction::printOptionValues()
+{
+    if(m_optionValues.isEmpty()){
+        return;
+    }
+    int optNameLength = 6;
+    int nameLength = 4;
+    int typeNameLength = 8;
+
+    for(const ICmdOptionValue* val : m_optionValues){
+        optNameLength = std::max({optNameLength, val->m_name.length()});
+        nameLength = std::max({nameLength, val->m_valueName.length()});
+        typeNameLength = std::max({typeNameLength, QString(val->m_prop.typeName()).length()});
+    }
+
+    qDebug().noquote().nospace() << "[OptionValues]:";
+    qDebug().noquote().nospace() << "    "
+                                 << qSetFieldWidth(optNameLength + 2) << left << "Option"
+                                 << qSetFieldWidth(nameLength + 2) << left << "Name"
+                                 << qSetFieldWidth(typeNameLength + 2) << left << "TypeName"
+                                 << "Memo";
+
+    for(const ICmdOptionValue* val : m_optionValues){
+
+        qDebug().noquote().nospace() << "    "
+                                     << qSetFieldWidth(optNameLength + 2) << left << val->m_name
+                                     << qSetFieldWidth(nameLength + 2) << left << val->m_valueName
+                                     << qSetFieldWidth(typeNameLength + 2) << left << val->m_prop.typeName()
+                                     << val->m_memo;
+    }
+}
+
+void ICmdAction::printArgs()
+{
+    if(m_args == nullptr){
+        return;
+    }
+
+    qDebug().noquote().nospace() << "[Args]:";
+
+    int nameLength = std::max({m_args->m_name.length(), 4}) + 2;
+    int typeNameLength = std::max({8, QString(m_args->m_prop.typeName()).length()}) + 2;
+    qDebug().noquote().nospace()
+            << "    "
+            << qSetFieldWidth(nameLength) << left << "Name"
+            << qSetFieldWidth(typeNameLength) << "TypeName"
+            << qSetFieldWidth(10) << left << "Nullable"
+            << "Memo";
+
+    qDebug().noquote().nospace()
+            << "    "
+            << qSetFieldWidth(nameLength) << left << m_args->m_name
+            << qSetFieldWidth(typeNameLength) << m_args->m_prop.typeName()
+            << qSetFieldWidth(10) << left << m_args->m_nullable
+            << m_args->m_memo;
+}
+
+void ICmdAction::printArgx()
+{
+    if(m_argxes.empty()){
+        return;
+    }
+
+    int nameLength = 4;
+    int typeNameLength = 8;
+
+    for(const auto& argx : m_argxes){
+        nameLength = std::max({nameLength, argx->m_name.length()});
+        typeNameLength = std::max({typeNameLength, QString(argx->m_property.typeName()).length()});
+    }
+
+    qDebug().noquote().nospace() << "[Argx]:";
+
+
+    qDebug().noquote().nospace()
+            << "    "
+            << qSetFieldWidth(7) << left << "Index"
+            << qSetFieldWidth(nameLength+2) << left << "Name"
+            << qSetFieldWidth(typeNameLength + 2) << left << "TypeName"
+            << qSetFieldWidth(10) << left << "Nullable"
+            << "Memo";
+
+
+    for(const auto& argx : m_argxes){
+        qDebug().noquote().nospace()
+                << "    "
+                << qSetFieldWidth(7) << left << argx->m_index
+                << qSetFieldWidth(nameLength+2) << left << argx->m_name
+                << qSetFieldWidth(typeNameLength + 2) << left << argx->m_property.typeName()
+                << qSetFieldWidth(10) << left << argx->m_nullable
+                << argx->m_memo;
+    }
 }
 
 $PackageWebCoreEnd

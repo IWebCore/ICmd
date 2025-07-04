@@ -22,15 +22,6 @@ void ICmdOption::execute(ICmdAction &action, const ICmdRequest &request)
     }
 }
 
-void ICmdOption::printHelp()
-{
-    qDebug().noquote() << "    " << "[Name]:" << ("--" + m_name)
-             << "[ShortName]:" << (m_shortName.isEmpty() ? " " : "-"+m_shortName)
-             << "[IsRequired]:" << m_isRequired
-             << "[IsNoValue]:" << m_isNoValue
-             << "[Memo]:" << m_memo;
-}
-
 bool ICmdOption::validate(ICmdAction &action, const ICmdRequest &request)
 {
     Q_UNUSED(action)

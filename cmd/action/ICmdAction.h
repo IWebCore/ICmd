@@ -27,10 +27,19 @@ public:
 
 private:
     void executeOptions(const ICmdRequest& request);
+    void checkOptions(const ICmdRequest& request);
     void executeOptionOns(const ICmdRequest& request);
+    void checkOptionOns(const ICmdRequest& request);
     void executeArgs(const ICmdRequest& request);
     void executeArgx(const ICmdRequest& request);
     void executeMain(const ICmdRequest& request);
+
+private:
+    void printBasic();
+    void printOptions();
+    void printOptionValues();
+    void printArgs();
+    void printArgx();
 
 public:
     void* m_ptr{};

@@ -33,6 +33,7 @@ void ICmdServer::serve()
 void ICmdServer::showGlobalHelp()
 {
     ICmdManage::instance().printHelp();
+    quick_exit(1);
 }
 
 void ICmdServer::showHelp()
@@ -40,6 +41,7 @@ void ICmdServer::showHelp()
     auto action = ICmdManage::instance().getAction(m_request);
     if(action){
         action->printHelp();
+        quick_exit(0);
     }else{
         showGlobalHelp();
     }

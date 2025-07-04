@@ -12,11 +12,13 @@
 
 #define $CmdMapping_1(funName)    \
     Q_CLASSINFO( PP_CMD_METHOD_MAPPING(funName), #funName)   \
+    Q_CLASSINFO( PP_CMD_METHOD_ARG_MAPPING(funName, 1), #funName) \
     Q_INVOKABLE
 
 #define $CmdMapping_2(funName, arg1)    \
+    Q_CLASSINFO( PP_CMD_METHOD_MAPPING(funName), #funName)   \
     Q_CLASSINFO( PP_CMD_METHOD_ARG_MAPPING(funName, 1), #arg1) \
-    $CmdMapping_1(funName)
+    Q_INVOKABLE
 
 #define $CmdMapping_3(funName, arg1, arg2)    \
     Q_CLASSINFO( PP_CMD_METHOD_ARG_MAPPING(funName, 2), #arg2) \

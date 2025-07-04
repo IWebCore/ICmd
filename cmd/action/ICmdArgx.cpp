@@ -26,15 +26,6 @@ void ICmdArgx::execute(ICmdAction &action, const ICmdRequest &request)
     }
 }
 
-void ICmdArgx::printHelp()
-{
-    qDebug().noquote() << "        "
-                       <<"[Index]:" << m_index
-                      <<"[ConvertType]:" << m_property.typeName()
-                     <<"[IsNullable]:" << m_nullable
-                    <<"[Memo]:" << m_memo;
-}
-
 bool ICmdArgx::validate(ICmdAction &action, const ICmdRequest &request)
 {
     Q_UNUSED(action)
