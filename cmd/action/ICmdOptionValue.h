@@ -26,6 +26,7 @@ private:
 
 public:
     ICmdOption* m_option{};
+    bool m_nullable{false}; // 默认为 不可为空
     QString m_name;
     QString m_shortName;
     QString m_memo;

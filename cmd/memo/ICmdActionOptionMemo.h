@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "core/util/IHeaderUtil.h"
+
 class ICmdActionOptionMemo
 {
 public:

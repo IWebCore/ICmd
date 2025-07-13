@@ -67,8 +67,10 @@ void ICmdWare::findOption()
         option->m_name = name;
         option->m_memo = m_info.value("ICmdOptionMemo$$$" + name);
         option->m_shortName = m_info.value("ICmdOptionShortName$$$" + name);
-        option->m_isNoValue = m_info.value("ICmdOptionNoValue$$$" + name) == "true";
-        option->m_isRequired = m_info.value("ICmdOptionRequired$$$" + name) == "true";
+        auto noValueName = "ICmdOptionNoValue$$$" + name;
+        option->m_isNoValue = m_info.contains(noValueName) && m_info.value(noValueName) == "true";
+        auto requiredName = "ICmdOptionRequired$$$" + name;
+        option->m_isRequired = m_info.contains(requiredName) && (m_info.value(requiredName) == "true");
         option->m_property = findProperty(name);
         option->m_preMethod = findPreHandleMethod("ICmdOptionPreHandle$$$" + name,
             "Option PreHandle function is defined, but function not found. "
@@ -111,6 +113,8 @@ void ICmdWare::findOptionValues()
             optionValue->m_shortName = opt->m_shortName;
             optionValue->m_valueName = name;
             optionValue->m_memo = m_info.value("ICmdOptionValueMemo$$$" + name);
+            auto nullableName = "ICmdOptionValueNullable$$$" + name;
+            optionValue->m_nullable = m_info.contains(nullableName) &&  m_info.value(nullableName) == "true";
             optionValue->m_prop = findProperty(name);
             optionValue->m_method = findSetValueMethod(name,
                 "Cmd Option values must have its $set_value_xxx method. " + QString(" [Option Name]: ").append(name)  + position
@@ -188,8 +192,8 @@ void ICmdWare::findArgx()
         argx->m_property = findProperty(name);
         argx->m_method = findSetValueMethod(name, "argx set_set_value method not found");
         argx->m_memo = m_info.value("ICmdArg" + QString::number(argx->m_index) + "Memo$$$");
-        QString nullableFlag = "ICmdArgXNullable$$$" + QString::number(argx->m_index);
-        argx->m_nullable = m_info.contains(nullableFlag) && m_info[nullableFlag] == "true";
+        QString nullableName = "ICmdArgXNullable$$$" + QString::number(argx->m_index);
+        argx->m_nullable = m_info.contains(nullableName) && m_info[nullableName] == "true";
         auto preHandleFun = "ICmdArgXPreHandle$$$" + QString::number(argx->m_index);
         argx->m_preMethod = findPreHandleMethod(preHandleFun,
             "argx PreHandle function is define, but function not valid"

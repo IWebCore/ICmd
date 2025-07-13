@@ -4,9 +4,13 @@
     "author": "yuekeyuan",
     "summary":"cmd library",
     "license":"AGPL-3.0-only",
+    "keywords":["cmd", "ICmd", "IWebCore", "command line", "shell", "console", "terminal", "command", "annotation"],
+    "links":[
+        "https://github.com/IWebCore/ICmd"
+    ],
     "dependencies": {
         "asio": "*",
         "nlohmann.json": "*"
     },
-    "keywords": ["ICmd", "IWebCore"]
+    "autoScan" : true
 }

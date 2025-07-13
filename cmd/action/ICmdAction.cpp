@@ -23,7 +23,7 @@ bool ICmdAction::isMatch(const ICmdRequest &request)
 
 void ICmdAction::execute(const ICmdRequest &request)
 {
-    checkOptions(request);
+    checkOptionValues(request);
     checkOptionOns(request);
 
     executeOptions(request);
@@ -59,34 +59,117 @@ void ICmdAction::executeOptions(const ICmdRequest &request)
     }
 }
 
-void ICmdAction::checkOptions(const ICmdRequest &request)
+void ICmdAction::checkOptionValues(const ICmdRequest &request)
 {
+    // request -> definition
+    // 这种情况是检查 request option 给了参数，但是 optionValue 没有定义的情况
     for(const QString& key : request.m_options.keys()){
-        bool matched = false;
+        if(request.m_options[key].isEmpty()){
+            continue;
+        }
+        bool ok = false;
         if(key.startsWith("--")){
-            QString newKey = key.left(2);
+            QString newKey = key.mid(2);
             for(auto val : m_optionValues){
                 if(val->m_name == newKey){
-                    matched = true;
+                    ok = true;
                     break;
                 }
             }
         }else{
-            QString newKey = key.left(1);
+            QString newKey = key.mid(1);
             for(auto val : m_optionValues){
                 if(val->m_shortName == newKey){
-                    matched = true;
+                    ok = true;
                     break;
                 }
             }
         }
 
-        if(!matched){
+        if(!ok){
+            QString tip = "your input option value are not defined in this cmd. [Option]: " + key;
+            qDebug().noquote().nospace() << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ");
+            printHelp();
+            quick_exit(1);
+        }
+    }
+
+    // definition -> request
+    // 这个是检查定义了 optionValue,并且optionValue 不能为空的情况， 而请求中没有给值
+    for(auto val : m_optionValues){
+        if(val->m_nullable){
+            continue;
+        }
+        bool ok{false};
+        QString fullName = "--" + val->m_name;
+        if(request.m_options.contains(fullName) && !request.m_options[fullName].isEmpty()){
+            ok = true;
+        }
+        QString shortName = "-" + val->m_shortName;
+        if(!val->m_shortName.isEmpty() && request.m_options.contains(shortName) && ! request.m_options[shortName].isEmpty()){
+            ok = true;
+        }
+        if(!ok){
+            qDebug().noquote().nospace() << "cmd defined option value and option value should not be null, but you do not provide option value. "
+                     << "[OptionValue]:" << val->m_name;
+
+            printHelp();
+            quick_exit(1);
+        }
+    }
+}
+
+void ICmdAction::checkOptionOns(const ICmdRequest &request)
+{
+    // request -> definition
+    for(const QString& key : request.m_options.keys()){
+        bool ok = false;
+        if(key.startsWith("--")){
+            QString newKey = key.mid(2);
+            for(auto val : m_options){
+                if(val->m_name == newKey){
+                    ok = true;
+                    break;
+                }
+            }
+        }else{
+            QString newKey = key.mid(1);
+            for(auto val : m_options){
+                if(val->m_shortName == newKey){
+                    ok = true;
+                    break;
+                }
+            }
+        }
+
+        if(!ok){
             QString tip = "your input options are not defined in this cmd. [Option]: " + key;
             qDebug().noquote().nospace()
                     << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ");
             printHelp();
             quick_exit(1);
+        }
+    }
+
+    //definition -> request
+    for(auto val : m_options){
+        if(val->m_isRequired){
+            bool ok = false;
+            auto fullName = "--" + val->m_name;
+            if(request.m_options.contains(fullName) && !request.m_options.value(fullName).isEmpty()){
+                ok = true;
+            }
+            auto shortName = "-" + val->m_shortName;
+            if(request.m_options.contains(shortName) && !request.m_options.value(shortName).isEmpty()){
+                ok = true;
+            }
+            if(!ok){
+                qDebug().noquote().nospace() << "your cmds do not contain options "
+                                             << val->m_name
+                                             << " which is required";
+                printHelp();
+                quick_exit(1);
+            }
         }
     }
 }
@@ -105,38 +188,6 @@ void ICmdAction::executeOptionOns(const ICmdRequest &request)
 
             printHelp();
             exit(1);
-        }
-    }
-}
-
-void ICmdAction::checkOptionOns(const ICmdRequest &request)
-{
-    for(const QString& key : request.m_options.keys()){
-        bool matched = false;
-        if(key.startsWith("--")){
-            QString newKey = key.left(2);
-            for(auto val : m_options){
-                if(val->m_name == newKey){
-                    matched = true;
-                    break;
-                }
-            }
-        }else{
-            QString newKey = key.left(1);
-            for(auto val : m_options){
-                if(val->m_shortName == newKey){
-                    matched = true;
-                    break;
-                }
-            }
-        }
-
-        if(!matched){
-            QString tip = "your input options are not defined in this cmd. [Option]: " + key;
-            qDebug().noquote().nospace()
-                    << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ");
-            printHelp();
-            quick_exit(1);
         }
     }
 }
@@ -242,6 +293,7 @@ void ICmdAction::printOptionValues()
     int optNameLength = 6;
     int nameLength = 4;
     int typeNameLength = 8;
+    int nullableLength = 8;
 
     for(const ICmdOptionValue* val : m_optionValues){
         optNameLength = std::max({optNameLength, val->m_name.length()});
@@ -254,6 +306,7 @@ void ICmdAction::printOptionValues()
                                  << qSetFieldWidth(optNameLength + 2) << left << "Option"
                                  << qSetFieldWidth(nameLength + 2) << left << "Name"
                                  << qSetFieldWidth(typeNameLength + 2) << left << "TypeName"
+                                 << qSetFieldWidth(nullableLength + 2) << left << "Nullable"
                                  << "Memo";
 
     for(const ICmdOptionValue* val : m_optionValues){
@@ -262,6 +315,7 @@ void ICmdAction::printOptionValues()
                                      << qSetFieldWidth(optNameLength + 2) << left << val->m_name
                                      << qSetFieldWidth(nameLength + 2) << left << val->m_valueName
                                      << qSetFieldWidth(typeNameLength + 2) << left << val->m_prop.typeName()
+                                     << qSetFieldWidth(nullableLength + 2) << left << val->m_nullable
                                      << val->m_memo;
     }
 }
