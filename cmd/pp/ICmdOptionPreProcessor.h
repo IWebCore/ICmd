@@ -66,7 +66,6 @@
 #define $CmdOptionMemo(Opt, Memo)   \
     Q_CLASSINFO(PP_STRING( ICmdOptionMemo$$$ ## Opt), Memo)
 
-
 // no value
 #define $CmdOptionNoValue(Opt)  \
     Q_CLASSINFO(PP_STRING( ICmdOptionNoValue$$$ ## Opt ), "true")

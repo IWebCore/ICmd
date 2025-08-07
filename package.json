@@ -12,5 +12,7 @@
         "asio": "*",
         "nlohmann.json": "*"
     },
-    "autoScan" : true
+    "autoScan" : true,
+    "isGlobal": true,
+    "publisher": "yuekeyuan"
 }
