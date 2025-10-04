@@ -1,5 +1,5 @@
 ﻿#include "ICmdServer.h"
-#include "core/application/IAsioApplication.h"
+#include "core/application/IApplicationManage.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/ICmdManage.h"
 #include "cmd/action/ICmdAction.h"
@@ -8,7 +8,7 @@ $PackageWebCoreBegin
 
 ICmdServer::ICmdServer()
 {
-    m_request = ICmdRequest(IApplication::instance().arguments());
+    m_request = ICmdRequest(IApplicationManage::instance().arguments());
 
 }
 

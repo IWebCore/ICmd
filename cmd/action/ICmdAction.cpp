@@ -1,5 +1,5 @@
 ﻿#include "ICmdAction.h"
-#include "core/application/IApplication.h"
+#include "core/application/IApplicationManage.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/ICmdException.h"
 #include "cmd/action/ICmdOptionValue.h"
@@ -244,7 +244,7 @@ void ICmdAction::executeMain(const ICmdRequest& request)
 void ICmdAction::printBasic()
 {
     qDebug().noquote().nospace() << "[CMD]:";
-    qDebug().noquote().nospace() << "    " << IApplication::instance().appName() << " " << m_paths.join(" ");
+    qDebug().noquote().nospace() << "    " << IApplicationManage::instance().applicationName() << " " << m_paths.join(" ");
     if(!m_memo.isEmpty()){
         qDebug().noquote().nospace() << "[Memo]:";
         qDebug().noquote().nospace() << "    " << m_memo;

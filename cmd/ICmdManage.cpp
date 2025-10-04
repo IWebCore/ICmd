@@ -1,7 +1,7 @@
 ﻿#include "ICmdManage.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/action/ICmdAction.h"
-#include "core/application/IApplication.h"
+#include "core/application/IApplicationManage.h"
 
 $PackageWebCoreBegin
 
@@ -14,14 +14,16 @@ void ICmdManage::printHelp()
     for(auto act : m_actions){
         length = std::max({length, act->m_paths.join(" ").length()});
     }
-    length += ( IApplication::instance().appName().length() + 4);
+    length += ( IApplicationManage::instance().applicationName().length() + 4);
 
     for(auto act : m_actions){
         QString memo;
         if(!act->m_memo.isEmpty()){
             memo = "[Memo]: " + act->m_memo;
         }
-        qDebug().noquote().nospace() << qSetFieldWidth(length) << left << (IApplication::instance().appName() + " " + act->m_paths.join(" ")) << memo;
+        qDebug().noquote().nospace() << qSetFieldWidth(length)
+                                     << left << (IApplicationManage::instance().applicationName() + " " + act->m_paths.join(" "))
+                                     << memo;
     }
 }
 
