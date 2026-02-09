@@ -1,4 +1,5 @@
 ﻿#include "ICmdAction.h"
+#include "core/application/iApp.h"
 #include "core/application/IApplicationManage.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/ICmdException.h"
@@ -47,12 +48,12 @@ void ICmdAction::executeOptions(const ICmdRequest &request)
     for(auto option : m_optionValues){
         try{
             option->execute(*this, request);
-        }catch(ICmdException e){
+        }catch(const ICmdException& e){
             QString tip = e.getCause();
             qDebug().noquote().nospace()
                     << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
                      << " [Cmd Arg Type]: Option"
-                     << " [Cmd Option Name]: " << option->m_name << endl;
+                     << " [Cmd Option Name]: " << option->m_name << Qt::endl;
             printHelp();
             exit(1);
         }
@@ -90,7 +91,7 @@ void ICmdAction::checkOptionValues(const ICmdRequest &request)
             QString tip = "your input option value are not defined in this cmd. [Option]: " + key;
             qDebug().noquote().nospace() << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ");
             printHelp();
-            quick_exit(1);
+            exit(1);
         }
     }
 
@@ -114,7 +115,7 @@ void ICmdAction::checkOptionValues(const ICmdRequest &request)
                      << "[OptionValue]:" << val->m_name;
 
             printHelp();
-            quick_exit(1);
+            exit(1);
         }
     }
 }
@@ -147,7 +148,7 @@ void ICmdAction::checkOptionOns(const ICmdRequest &request)
             qDebug().noquote().nospace()
                     << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ");
             printHelp();
-            quick_exit(1);
+            exit(1);
         }
     }
 
@@ -168,7 +169,7 @@ void ICmdAction::checkOptionOns(const ICmdRequest &request)
                                              << val->m_name
                                              << " which is required";
                 printHelp();
-                quick_exit(1);
+                exit(1);
             }
         }
     }
@@ -179,12 +180,12 @@ void ICmdAction::executeOptionOns(const ICmdRequest &request)
     for(auto on : m_options){
         try{
             on->execute(*this, request);
-        }catch(ICmdException e){
+        }catch(const ICmdException& e){
             QString tip = e.getCause();
             qDebug().noquote().nospace()
                     << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
                      << " [Cmd Arg Type]: OptionON"
-                     << " [Cmd Option ON Name]: " << on->m_name << endl;
+                     << " [Cmd Option ON Name]: " << on->m_name << Qt::endl;
 
             printHelp();
             exit(1);
@@ -202,7 +203,7 @@ void ICmdAction::executeArgs(const ICmdRequest &request)
             qDebug().noquote().nospace()
                     << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
                      << " [Cmd Arg Type]: Args"
-                     << " [Cmd Arg Values]: " << request.m_arguments.join(", ") << endl;
+                     << " [Cmd Arg Values]: " << request.m_arguments.join(", ") << Qt::endl;
 
             printHelp();
             exit(1);
@@ -215,12 +216,12 @@ void ICmdAction::executeArgx(const ICmdRequest &request)
     for(auto argx : m_argxes){
         try{
            argx->execute(*this, request);
-        } catch(ICmdException e){
+        } catch(const ICmdException& e){
             QString tip = e.getCause();
             qDebug().noquote().nospace()
                     << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
                      << " [Cmd Arg Type]: ArgX" << " [ArgX Name]: " << argx->m_name
-                     << " [ArgX Index]: " << QString::number(argx->m_index) << endl;
+                     << " [ArgX Index]: " << QString::number(argx->m_index) << Qt::endl;
 
             printHelp();
             exit(1);
@@ -244,7 +245,7 @@ void ICmdAction::executeMain(const ICmdRequest& request)
 void ICmdAction::printBasic()
 {
     qDebug().noquote().nospace() << "[CMD]:";
-    qDebug().noquote().nospace() << "    " << IApplicationManage::instance().applicationName() << " " << m_paths.join(" ");
+    qDebug().noquote().nospace() << "    " << iApp->applicationName() << " " << m_paths.join(" ");
     if(!m_memo.isEmpty()){
         qDebug().noquote().nospace() << "[Memo]:";
         qDebug().noquote().nospace() << "    " << m_memo;
@@ -261,25 +262,25 @@ void ICmdAction::printOptions()
 
     int fullLength{6}, shortLength{9}, requriedLength{10}, noValueLength{9};
     for(auto opt : m_options){
-        fullLength = std::max({opt->m_name.length() + 2, fullLength});
-        shortLength = std::max({opt->m_shortName.length() + 1, shortLength});
+        fullLength = std::max({static_cast<int>(opt->m_name.length()) + 2, fullLength});
+        shortLength = std::max({static_cast<int>(opt->m_shortName.length()) + 1, shortLength});
     }
     qDebug().noquote().nospace()
             << "    "
-            << qSetFieldWidth(fullLength + 2) << left << "Option"
-            << qSetFieldWidth(shortLength + 2) << left << "ShortName"
-            << qSetFieldWidth(requriedLength +2) << left << "Required"
-            << qSetFieldWidth(noValueLength + 2) << left << "NoValue"
+            << qSetFieldWidth(fullLength + 2) << Qt::left << "Option"
+            << qSetFieldWidth(shortLength + 2) << Qt::left << "ShortName"
+            << qSetFieldWidth(requriedLength +2) << Qt::left << "Required"
+            << qSetFieldWidth(noValueLength + 2) << Qt::left << "NoValue"
             << "Memo";
 
 
     for(auto opt : m_options){
         qDebug().noquote().nospace()
                 << "    "
-                << qSetFieldWidth(fullLength + 2) << left << "--" + opt->m_name
-                << qSetFieldWidth(shortLength + 2) << left << "-" + opt->m_shortName
-                << qSetFieldWidth(requriedLength +2) << left << opt->m_isRequired
-                << qSetFieldWidth(noValueLength + 2) << left << opt->m_isNoValue
+                << qSetFieldWidth(fullLength + 2) << Qt::left << "--" + opt->m_name
+                << qSetFieldWidth(shortLength + 2) << Qt::left << "-" + opt->m_shortName
+                << qSetFieldWidth(requriedLength +2) << Qt::left << opt->m_isRequired
+                << qSetFieldWidth(noValueLength + 2) << Qt::left << opt->m_isNoValue
                 << opt->m_memo;
     }
 
@@ -296,26 +297,26 @@ void ICmdAction::printOptionValues()
     int nullableLength = 8;
 
     for(const ICmdOptionValue* val : m_optionValues){
-        optNameLength = std::max({optNameLength, val->m_name.length()});
-        nameLength = std::max({nameLength, val->m_valueName.length()});
-        typeNameLength = std::max({typeNameLength, QString(val->m_prop.typeName()).length()});
+        optNameLength = std::max({optNameLength, static_cast<int>(val->m_name.length())});
+        nameLength = std::max({nameLength, static_cast<int>(val->m_valueName.length())});
+        typeNameLength = std::max({typeNameLength, static_cast<int>(QString(val->m_prop.typeName()).length())});
     }
 
     qDebug().noquote().nospace() << "[OptionValues]:";
     qDebug().noquote().nospace() << "    "
-                                 << qSetFieldWidth(optNameLength + 2) << left << "Option"
-                                 << qSetFieldWidth(nameLength + 2) << left << "Name"
-                                 << qSetFieldWidth(typeNameLength + 2) << left << "TypeName"
-                                 << qSetFieldWidth(nullableLength + 2) << left << "Nullable"
+                                 << qSetFieldWidth(optNameLength + 2) << Qt::left << "Option"
+                                 << qSetFieldWidth(nameLength + 2) << Qt::left << "Name"
+                                 << qSetFieldWidth(typeNameLength + 2) << Qt::left << "TypeName"
+                                 << qSetFieldWidth(nullableLength + 2) << Qt::left << "Nullable"
                                  << "Memo";
 
     for(const ICmdOptionValue* val : m_optionValues){
 
         qDebug().noquote().nospace() << "    "
-                                     << qSetFieldWidth(optNameLength + 2) << left << val->m_name
-                                     << qSetFieldWidth(nameLength + 2) << left << val->m_valueName
-                                     << qSetFieldWidth(typeNameLength + 2) << left << val->m_prop.typeName()
-                                     << qSetFieldWidth(nullableLength + 2) << left << val->m_nullable
+                                     << qSetFieldWidth(optNameLength + 2) << Qt::left << val->m_name
+                                     << qSetFieldWidth(nameLength + 2) << Qt::left << val->m_valueName
+                                     << qSetFieldWidth(typeNameLength + 2) << Qt::left << val->m_prop.typeName()
+                                     << qSetFieldWidth(nullableLength + 2) << Qt::left << val->m_nullable
                                      << val->m_memo;
     }
 }
@@ -328,20 +329,20 @@ void ICmdAction::printArgs()
 
     qDebug().noquote().nospace() << "[Args]:";
 
-    int nameLength = std::max({m_args->m_name.length(), 4}) + 2;
-    int typeNameLength = std::max({8, QString(m_args->m_prop.typeName()).length()}) + 2;
+    int nameLength = std::max({static_cast<int>(m_args->m_name.length()), 4}) + 2;
+    int typeNameLength = std::max({8, static_cast<int>(QString(m_args->m_prop.typeName()).length())}) + 2;
     qDebug().noquote().nospace()
             << "    "
-            << qSetFieldWidth(nameLength) << left << "Name"
+            << qSetFieldWidth(nameLength) << Qt::left << "Name"
             << qSetFieldWidth(typeNameLength) << "TypeName"
-            << qSetFieldWidth(10) << left << "Nullable"
+            << qSetFieldWidth(10) << Qt::left << "Nullable"
             << "Memo";
 
     qDebug().noquote().nospace()
             << "    "
-            << qSetFieldWidth(nameLength) << left << m_args->m_name
+            << qSetFieldWidth(nameLength) << Qt::left << m_args->m_name
             << qSetFieldWidth(typeNameLength) << m_args->m_prop.typeName()
-            << qSetFieldWidth(10) << left << m_args->m_nullable
+            << qSetFieldWidth(10) << Qt::left << m_args->m_nullable
             << m_args->m_memo;
 }
 
@@ -355,8 +356,8 @@ void ICmdAction::printArgx()
     int typeNameLength = 8;
 
     for(const auto& argx : m_argxes){
-        nameLength = std::max({nameLength, argx->m_name.length()});
-        typeNameLength = std::max({typeNameLength, QString(argx->m_property.typeName()).length()});
+        nameLength = std::max({nameLength, static_cast<int>(argx->m_name.length())});
+        typeNameLength = std::max({typeNameLength, static_cast<int>(QString(argx->m_property.typeName()).length())});
     }
 
     qDebug().noquote().nospace() << "[Argx]:";
@@ -364,20 +365,20 @@ void ICmdAction::printArgx()
 
     qDebug().noquote().nospace()
             << "    "
-            << qSetFieldWidth(7) << left << "Index"
-            << qSetFieldWidth(nameLength+2) << left << "Name"
-            << qSetFieldWidth(typeNameLength + 2) << left << "TypeName"
-            << qSetFieldWidth(10) << left << "Nullable"
+            << qSetFieldWidth(7) << Qt::left << "Index"
+            << qSetFieldWidth(nameLength+2) << Qt::left << "Name"
+            << qSetFieldWidth(typeNameLength + 2) << Qt::left << "TypeName"
+            << qSetFieldWidth(10) << Qt::left << "Nullable"
             << "Memo";
 
 
     for(const auto& argx : m_argxes){
         qDebug().noquote().nospace()
                 << "    "
-                << qSetFieldWidth(7) << left << argx->m_index
-                << qSetFieldWidth(nameLength+2) << left << argx->m_name
-                << qSetFieldWidth(typeNameLength + 2) << left << argx->m_property.typeName()
-                << qSetFieldWidth(10) << left << argx->m_nullable
+                << qSetFieldWidth(7) << Qt::left << argx->m_index
+                << qSetFieldWidth(nameLength+2) << Qt::left << argx->m_name
+                << qSetFieldWidth(typeNameLength + 2) << Qt::left << argx->m_property.typeName()
+                << qSetFieldWidth(10) << Qt::left << argx->m_nullable
                 << argx->m_memo;
     }
 }

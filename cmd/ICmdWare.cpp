@@ -24,7 +24,7 @@ void ICmdWare::parseAction(void *ptr, const QString& clsName, const QMap<QString
         findArgs();
         findArgx();
         createActions();
-    } catch(ICmdException e){
+    } catch(const ICmdException& e){
         qDebug() << e.getCause();
         throw e;
     }

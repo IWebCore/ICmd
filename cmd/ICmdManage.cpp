@@ -1,6 +1,7 @@
 ﻿#include "ICmdManage.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/action/ICmdAction.h"
+#include "core/application/iApp.h"
 #include "core/application/IApplicationManage.h"
 
 $PackageWebCoreBegin
@@ -12,9 +13,9 @@ void ICmdManage::printHelp()
 
     int length{0};
     for(auto act : m_actions){
-        length = std::max({length, act->m_paths.join(" ").length()});
+        length = std::max({length, static_cast<int>(act->m_paths.join(" ").length())});
     }
-    length += ( IApplicationManage::instance().applicationName().length() + 4);
+    length += (iApp->applicationName().length() + 4);
 
     for(auto act : m_actions){
         QString memo;
@@ -22,7 +23,7 @@ void ICmdManage::printHelp()
             memo = "[Memo]: " + act->m_memo;
         }
         qDebug().noquote().nospace() << qSetFieldWidth(length)
-                                     << left << (IApplicationManage::instance().applicationName() + " " + act->m_paths.join(" "))
+                                     << Qt::left << (iApp->applicationName() + " " + act->m_paths.join(" "))
                                      << memo;
     }
 }

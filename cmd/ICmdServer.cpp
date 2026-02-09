@@ -1,4 +1,5 @@
 ﻿#include "ICmdServer.h"
+#include "core/application/iApp.h"
 #include "core/application/IApplicationManage.h"
 #include "cmd/ICmdRequest.h"
 #include "cmd/ICmdManage.h"
@@ -8,8 +9,7 @@ $PackageWebCoreBegin
 
 ICmdServer::ICmdServer()
 {
-    m_request = ICmdRequest(IApplicationManage::instance().arguments());
-
+    m_request = ICmdRequest(iApp->arguments());
 }
 
 void ICmdServer::serve()
@@ -33,7 +33,7 @@ void ICmdServer::serve()
 void ICmdServer::showGlobalHelp()
 {
     ICmdManage::instance().printHelp();
-    quick_exit(1);
+    exit(1);
 }
 
 void ICmdServer::showHelp()
@@ -41,7 +41,7 @@ void ICmdServer::showHelp()
     auto action = ICmdManage::instance().getAction(m_request);
     if(action){
         action->printHelp();
-        quick_exit(0);
+        exit(0);
     }else{
         showGlobalHelp();
     }
