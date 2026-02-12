@@ -41,7 +41,7 @@ void ICmdOptionValue::invokePreMethod(ICmdAction &action, const ICmdRequest &req
     auto index = m_preMethod.methodIndex();
     auto obj = static_cast<QObject*>(action.m_ptr);
     action.m_callable(obj, QMetaObject::InvokeMetaMethod, index, param.data());
-    QMetaType::destroy(QMetaType::Void, param[0]);
+    QMetaType(QMetaType::Void).destroy(param[0]);
 }
 
 void ICmdOptionValue::invokePostMethod(ICmdAction &action, const ICmdRequest &request)
