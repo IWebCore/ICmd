@@ -35,7 +35,7 @@ bool ICmdOptionValue::validate(ICmdAction &action, const ICmdRequest &request)
 void ICmdOptionValue::invokePreMethod(ICmdAction &action, const ICmdRequest &request)
 {
     ParamType param;
-    param[0] = QMetaType::create(QMetaType::Void);
+    param[0] = QMetaType(QMetaType::Void).create();
     param[1] = const_cast<ICmdRequest*>(&request);
 
     auto index = m_preMethod.methodIndex();
@@ -47,13 +47,13 @@ void ICmdOptionValue::invokePreMethod(ICmdAction &action, const ICmdRequest &req
 void ICmdOptionValue::invokePostMethod(ICmdAction &action, const ICmdRequest &request)
 {
     ParamType param;
-    param[0] = QMetaType::create(QMetaType::Void);
+    param[0] = QMetaType(QMetaType::Void).create();
     param[1] = const_cast<ICmdRequest*>(&request);
 
     auto index = m_postMethod.methodIndex();
     auto obj = static_cast<QObject*>(action.m_ptr);
     action.m_callable(obj, QMetaObject::InvokeMetaMethod, index, param.data());
-    QMetaType::destroy(QMetaType::Void, param[0]);
+    QMetaType(QMetaType::Void).destroy(param[0]);
 }
 
 void ICmdOptionValue::invokeSetValueMethod(ICmdAction &action, const ICmdRequest &request)
@@ -61,13 +61,13 @@ void ICmdOptionValue::invokeSetValueMethod(ICmdAction &action, const ICmdRequest
     auto values = getOptionValues(request);
 
     ParamType param;
-    param[0] = QMetaType::create(QMetaType::Void);
+    param[0] = QMetaType(QMetaType::Void).create();
     param[1] = &values;
 
     auto index = m_method.methodIndex();
     auto obj = static_cast<QObject*>(action.m_ptr);
     action.m_callable(obj, QMetaObject::InvokeMetaMethod, index, param.data());
-    QMetaType::destroy(QMetaType::Void, param[0]);
+    QMetaType(QMetaType::Void).destroy(param[0]);
 }
 
 QStringList ICmdOptionValue::getOptionValues(const ICmdRequest &request) const

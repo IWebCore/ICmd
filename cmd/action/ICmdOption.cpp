@@ -39,25 +39,25 @@ bool ICmdOption::validate(ICmdAction &action, const ICmdRequest &request)
 void ICmdOption::invokePreMethod(ICmdAction &action, const ICmdRequest &request)
 {
     ParamType param;
-    param[0] = QMetaType::create(QMetaType::Void);
+    param[0] = QMetaType(QMetaType::Void).create();
     param[1] = const_cast<ICmdRequest*>(&request);
 
     auto index = m_preMethod.methodIndex();
     auto obj = static_cast<QObject*>(action.m_ptr);
     action.m_callable(obj, QMetaObject::InvokeMetaMethod, index, param.data());
-    QMetaType::destroy(QMetaType::Void, param[0]);
+    QMetaType(QMetaType::Void).destroy(param[0]);
 }
 
 void ICmdOption::invokePostMethod(ICmdAction &action, const ICmdRequest &request)
 {
     ParamType param;
-    param[0] = QMetaType::create(QMetaType::Void);
+    param[0] = QMetaType(QMetaType::Void).create();
     param[1] = const_cast<ICmdRequest*>(&request);
 
     auto index = m_postMethod.methodIndex();
     auto obj = static_cast<QObject*>(action.m_ptr);
     action.m_callable(obj, QMetaObject::InvokeMetaMethod, index, param.data());
-    QMetaType::destroy(QMetaType::Void, param[0]);
+    QMetaType(QMetaType::Void).destroy(param[0]);
 }
 
 void ICmdOption::invokeSetValueMethod(ICmdAction &action, const ICmdRequest &request)

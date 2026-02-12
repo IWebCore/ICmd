@@ -198,7 +198,7 @@ void ICmdAction::executeArgs(const ICmdRequest &request)
     if(m_args){
         try{
             m_args->execute(*this, request);
-        }catch(ICmdException e){
+        }catch(const ICmdException& e){
             QString tip = e.getCause();
             qDebug().noquote().nospace()
                     << "ERROR OCCURED: " << tip << " [Cmd Path]: " << request.m_paths.join(" ")
@@ -232,14 +232,14 @@ void ICmdAction::executeArgx(const ICmdRequest &request)
 void ICmdAction::executeMain(const ICmdRequest& request)
 {
     ParamType params{0};
-    params[0] = QMetaType::create(QMetaType::Void);
+    params[0] = QMetaType(QMetaType::Void).create();
     params[1] = const_cast<ICmdRequest*>(&request);
 
     auto index = m_method.methodIndex();
     auto obj = static_cast<QObject*>(m_ptr);
     m_callable(obj, QMetaObject::InvokeMetaMethod, index, params.data());
 
-    QMetaType::destroy(QMetaType::Void, params[0]);
+    QMetaType(QMetaType::Void).destroy(params[0]);
 }
 
 void ICmdAction::printBasic()
